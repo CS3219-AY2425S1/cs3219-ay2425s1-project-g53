@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
+import Link from "next/link";
+import MainIcon from './icons/MainLogo.svg'
+import Image from "next/image";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -32,6 +35,14 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <nav className="navbar bg-secondary">
+          <div className="container-fluid">
+            <Link href="/questions" className="navbar-brand">
+              <Image className="me-1" priority src={MainIcon} alt="PeerPrep" height={32} width={32} />PeerPrep
+            </Link>
+          </div>
+
+        </nav>
         {children}
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossOrigin="anonymous">
         </script>
