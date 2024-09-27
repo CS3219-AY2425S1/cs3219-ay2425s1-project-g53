@@ -1,0 +1,68 @@
+[
+  {
+   "title": "Reverse a String",
+   "description": "Write a function that reverses a string. The input string is given as an array of characters s.\nYou must do this by modifying the input array in-place with O(1) extra memory.\n \nExample 1:\nInput: s = [\"h\",\"e\",\"l\",\"l\",\"o\"]\nOutput: [\"o\",\"l\",\"l\",\"e\",\"h\"]\nExample 2:\nInput: s = [\"H\",\"a\",\"n\",\"n\",\"a\",\"h\"]\nOutput: [\"h\",\"a\",\"n\",\"n\",\"a\",\"H\"]\n \nConstraints:\n1 <= s.length <= 105\ns[i] is a printable ascii character.",
+   "categories": ["Strings", "Algorithms"],
+   "complexity": "Easy"      
+  },
+  {
+   "title": "Linked List Cycle Detection",
+   "description": "Implement a function to detect if a linked list contains a cycle.",
+   "categories": ["Data Structures", "Algorithms"],
+   "complexity": "Easy"      
+  },
+  {
+   "title": "Roman to Integer",
+   "description": "Given a roman numberal, convert it to an integer.",
+   "categories": ["Algorithms"],
+   "complexity": "Easy"      
+  },
+  {
+   "title": "Add Binary",
+   "description": "Given two binary strings a and b, return their sum as a binary string",
+   "categories": ["Bit Manipulation", "Algorithms"],
+   "complexity": "Easy"      
+  },
+  {
+   "title": "Fibonacci Number",
+   "description": "The Fibonacci numbers, commonly denoted F(n) form a sequence, called the Fibonacci sequence, such that each number is the sum of the two preceding ones, starting from 0 and 1. That is,\n\nF(0) = 0, F(1) = 1\nF(n) = F(n - 1) + F(n -\n2), for n > 1.\nGiven n, calculate F(n).",
+   "categories": ["Recursion", "Algorithms"],
+   "complexity": "Easy"      
+  },
+  {
+   "title": "Implement Stack using Queues",
+   "description": "Implement a last-in-first-out (LIFO) stack using only two queues. The implemented stack should support all the functions of a normal stack (push, top, pop, and empty).",
+   "categories": ["Data Structures"],
+   "complexity": "Easy"      
+  },
+  {
+   "title": "Combine Two Tables",
+   "description": "Given table Person with the following columns:\n\t1. personId(int)\n\t2. lastName (varchar)\n\t3.firstName (varchar)\npersonId is the primary key.\nAdd table Address with the following columns:\n\t1. addressId (int)\n\t2. personId (int)\n\t3. city(varchar)\n\t4. state (varchar)\naddressId is the primary key.\nWrite a solution to report the first name, last name, city and state of each person in the Person table. If the address of a personId is not present in the Address table, report null instead. Return the result table in any order.",
+   "categories": ["Databases"],
+   "complexity": "Easy"      
+  },
+  {
+   "title": "Reverse a String",
+   "description": "Write a function that reverses a string. The input string is given as an array of characters s.\nYou must do this by modifying the input array in-place with O(1) extra memory.\n \nExample 1:\nInput: s = [\"h\",\"e\",\"l\",\"l\",\"o\"]\nOutput: [\"o\",\"l\",\"l\",\"e\",\"h\"]\nExample 2:\nInput: s = [\"H\",\"a\",\"n\",\"n\",\"a\",\"h\"]\nOutput: [\"h\",\"a\",\"n\",\"n\",\"a\",\"H\"]\n \nConstraints:\n1 <= s.length <= 105\ns[i] is a printable ascii character.",
+   "categories": ["Strings", "Algorithms"],
+   "complexity": "Easy"      
+  },
+  {
+   "title": "Reverse a String",
+   "description": "Write a function that reverses a string. The input string is given as an array of characters s.\nYou must do this by modifying the input array in-place with O(1) extra memory.\n \nExample 1:\nInput: s = [\"h\",\"e\",\"l\",\"l\",\"o\"]\nOutput: [\"o\",\"l\",\"l\",\"e\",\"h\"]\nExample 2:\nInput: s = [\"H\",\"a\",\"n\",\"n\",\"a\",\"h\"]\nOutput: [\"h\",\"a\",\"n\",\"n\",\"a\",\"H\"]\n \nConstraints:\n1 <= s.length <= 105\ns[i] is a printable ascii character.",
+   "categories": ["Strings", "Algorithms"],
+   "complexity": "Easy"      
+  },
+  {
+   "title": "Reverse a String",
+   "description": "Write a function that reverses a string. The input string is given as an array of characters s.\nYou must do this by modifying the input array in-place with O(1) extra memory.\n \nExample 1:\nInput: s = [\"h\",\"e\",\"l\",\"l\",\"o\"]\nOutput: [\"o\",\"l\",\"l\",\"e\",\"h\"]\nExample 2:\nInput: s = [\"H\",\"a\",\"n\",\"n\",\"a\",\"h\"]\nOutput: [\"h\",\"a\",\"n\",\"n\",\"a\",\"H\"]\n \nConstraints:\n1 <= s.length <= 105\ns[i] is a printable ascii character.",
+   "categories": ["Strings", "Algorithms"],
+   "complexity": "Easy"      
+  },
+  {
+   "title": "Reverse a String",
+   "description": "Write a function that reverses a string. The input string is given as an array of characters s.\nYou must do this by modifying the input array in-place with O(1) extra memory.\n \nExample 1:\nInput: s = [\"h\",\"e\",\"l\",\"l\",\"o\"]\nOutput: [\"o\",\"l\",\"l\",\"e\",\"h\"]\nExample 2:\nInput: s = [\"H\",\"a\",\"n\",\"n\",\"a\",\"h\"]\nOutput: [\"h\",\"a\",\"n\",\"n\",\"a\",\"H\"]\n \nConstraints:\n1 <= s.length <= 105\ns[i] is a printable ascii character.",
+   "categories": ["Strings", "Algorithms"],
+   "complexity": "Easy"      
+  },
+]
