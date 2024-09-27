@@ -1,16 +1,63 @@
-from typing_extensions import Annotated, List
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel, StringConstraints
-from sqlalchemy import create_engine, MetaData, Table, Column, Integer, String
+import typing
 from enum import Enum
 
-from databases import Database
+import json5
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel, StringConstraints, ValidationError
+from sqlalchemy import (
+    Column,
+    ForeignKey,
+    Integer,
+    String,
+    Table,
+    Text,
+    create_engine,
+    event,
+)
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import relationship, sessionmaker
+from typing_extensions import Annotated
 
-DATABASE_URL = "postgresql://postgres:1324@localhost/peerprep"
+DATABASE_URL = "postgresql://admin@localhost/postgres"
 
-database = Database(DATABASE_URL)
-metadata = MetaData()
+Base = declarative_base()
+
+question_categories = Table(
+    "question_categories",
+    Base.metadata,
+    Column("question_id", Integer, ForeignKey("questions.id"), primary_key=True),
+    Column("category_id", Integer, ForeignKey("categories.id"), primary_key=True),
+)
+
+
+class Category(Base):
+    __tablename__ = "categories"
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String(50), unique=True, nullable=False)
+    questions = relationship(
+        "Question", secondary=question_categories, back_populates="categories"
+    )
+
+
+class Question(Base):
+    __tablename__ = "questions"
+
+    id = Column(Integer, primary_key=True, index=True)
+    title = Column(String(255), unique=True, nullable=False)
+    description = Column(Text, nullable=False)
+    complexity = Column(String(16), nullable=False)
+
+    categories = relationship(
+        "Category", secondary=question_categories, back_populates="questions"
+    )
+
+
+engine = create_engine(DATABASE_URL)
+Base.metadata.create_all(engine)
+Session = sessionmaker(bind=engine)
+session = Session()
 
 
 class Complexity(str, Enum):
@@ -19,25 +66,65 @@ class Complexity(str, Enum):
     HARD = "Hard"
 
 
-class Question(BaseModel):
+class QuestionBase(BaseModel):
     title: Annotated[str, StringConstraints(strip_whitespace=True, min_length=2)]
     description: Annotated[str, StringConstraints(strip_whitespace=True, min_length=5)]
-    category: str
+    categories: typing.List[
+        Annotated[str, StringConstraints(strip_whitespace=True, min_length=2)]
+    ]
     complexity: Complexity
 
+    def toQuestion(self) -> Question:
+        return Question(
+            title=self.title,
+            description=self.description,
+            complexity=self.complexity.value,
+            categories=[add_or_create_category(n) for n in self.categories],
+        )
 
-questions = Table(
-    "questions",
-    metadata,
-    Column("id", Integer, primary_key=True),
-    Column("title", String(100)),
-    Column("description", String(500)),
-    Column("category", String(50)),
-    Column("complexity", String(50)),
-)
 
-engine = create_engine(DATABASE_URL)
-metadata.create_all(engine)
+class QuestionFull(QuestionBase):
+    id: int
+
+    class Config:
+        from_attributes = True
+
+
+def add_or_create_category(name: str) -> Category:
+    category = session.query(Category).filter_by(name=name).first()
+    if category is None:
+        category = Category(name=name)
+        session.add(category)
+        session.commit()
+    return category
+
+
+@event.listens_for(Base.metadata, "after_create")
+def init(**kwargs):
+    with open("leetcode.json", mode="r") as f:
+        data = json5.load(f)
+        for entry in data:
+            try:
+                question: Question = QuestionBase(
+                    title=entry["title"],
+                    description=entry["question"] + "\n" + "\n".join(entry["examples"]),
+                    categories=entry["category"],
+                    complexity=entry["complexity"],
+                ).toQuestion()
+                title = session.query(Question.title).filter_by(title=question.title).first()
+                if title is None:
+                    session.add(question)
+                    session.commit()
+                else:
+                    continue
+            except ValidationError as e:
+                print(e)
+            except KeyError as e:
+                print(e)
+                print(entry)
+
+
+init()
 
 app = FastAPI()
 
@@ -56,54 +143,38 @@ app.add_middleware(
 
 @app.on_event("startup")
 async def startup():
-    await database.connect()
+    pass
 
 
 @app.on_event("shutdown")
 async def shutdown():
-    await database.disconnect()
+    # await database.disconnect()
+    pass
+
+
+@app.get("/questions/categories")
+def get_categories() -> list[str]:
+    return session.query(Category.name).all()
+
 
 @app.get("/questions/complexities")
-async def get_complexities()-> list[str]:
+def get_complexities() -> list[str]:
     return [complexity.value for complexity in Complexity]
 
 
 @app.post("/questions")
-async def create_question(question: Question):
-    query = questions.insert().values(
-        title=question.title,
-        description=question.description,
-        category=question.category,
-        complexity=question.complexity,
-    )
-    last_record_id = await database.execute(query)
-    return {**question.dict(), "id": last_record_id}
+def create_question(question: QuestionBase) -> QuestionFull:
+    db_question = question.toQuestion()
+    session.add(db_question)
+    session.commit()
+    session.refresh(db_question)
+    return db_question
 
 
 @app.get("/questions")
-async def get_questions():
-    query = questions.select()
-    return await database.fetch_all(query)
+def get_questions() -> list[QuestionFull]:
+    return [
+        {**q.__dict__, "categories": [c.name for c in q.categories]}
+        for q in session.query(Question).all()
+    ]
 
-
-@app.put("/questions/{id}")
-async def update_question(id: int, question: Question):
-    query = (
-        questions.update()
-        .where(questions.c.id == id)
-        .values(
-            title=question.title,
-            description=question.description,
-            category=question.category,
-            complexity=question.complexity,
-        )
-    )
-    await database.execute(query)
-    return {"msg": "Question updated"}
-
-
-@app.delete("/questions/{id}")
-async def delete_question(id: int):
-    query = questions.delete().where(questions.c.id == id)
-    await database.execute(query)
-    return {"msg": "Question deleted"}
