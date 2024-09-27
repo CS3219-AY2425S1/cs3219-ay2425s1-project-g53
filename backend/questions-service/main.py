@@ -1,3 +1,4 @@
+import os
 import typing
 from enum import Enum
 
@@ -19,7 +20,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, sessionmaker
 from typing_extensions import Annotated
 
-DATABASE_URL = "postgresql://admin@localhost/postgres"
+DATABASE_URL = os.environ["DB_URL"]
 
 Base = declarative_base()
 
@@ -54,16 +55,24 @@ class Question(Base):
     )
 
 
-engine = create_engine(DATABASE_URL)
-Base.metadata.create_all(engine)
-Session = sessionmaker(bind=engine)
-session = Session()
-
-
 class Complexity(str, Enum):
     EASY = "Easy"
     MEDIUM = "Medium"
     HARD = "Hard"
+
+
+engine = create_engine(DATABASE_URL)
+Session = sessionmaker(bind=engine)
+session = Session()
+
+
+def add_or_create_category(name: str) -> Category:
+    category = session.query(Category).filter_by(name=name).first()
+    if category is None:
+        category = Category(name=name)
+        session.add(category)
+        session.commit()
+    return category
 
 
 class QuestionBase(BaseModel):
@@ -83,24 +92,7 @@ class QuestionBase(BaseModel):
         )
 
 
-class QuestionFull(QuestionBase):
-    id: int
-
-    class Config:
-        from_attributes = True
-
-
-def add_or_create_category(name: str) -> Category:
-    category = session.query(Category).filter_by(name=name).first()
-    if category is None:
-        category = Category(name=name)
-        session.add(category)
-        session.commit()
-    return category
-
-
-@event.listens_for(Base.metadata, "after_create")
-def init(**kwargs):
+def init(*args, **kwargs):
     with open("leetcode.json", mode="r") as f:
         data = json5.load(f)
         for entry in data:
@@ -111,7 +103,11 @@ def init(**kwargs):
                     categories=entry["category"],
                     complexity=entry["complexity"],
                 ).toQuestion()
-                title = session.query(Question.title).filter_by(title=question.title).first()
+                title = (
+                    session.query(Question.title)
+                    .filter_by(title=question.title)
+                    .first()
+                )
                 if title is None:
                     session.add(question)
                     session.commit()
@@ -124,7 +120,16 @@ def init(**kwargs):
                 print(entry)
 
 
-init()
+event.listen(Base.metadata, "after_create", init)
+Base.metadata.create_all(engine)
+
+
+class QuestionFull(QuestionBase):
+    id: int
+
+    class Config:
+        from_attributes = True
+
 
 app = FastAPI()
 
@@ -177,4 +182,3 @@ def get_questions() -> list[QuestionFull]:
         {**q.__dict__, "categories": [c.name for c in q.categories]}
         for q in session.query(Question).all()
     ]
-
