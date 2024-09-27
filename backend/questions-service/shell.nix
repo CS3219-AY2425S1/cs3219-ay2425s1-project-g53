@@ -8,6 +8,7 @@
       databases
       uvicorn
       psycopg2
+      json5
     ]);
 in
   pkgs.mkShell {

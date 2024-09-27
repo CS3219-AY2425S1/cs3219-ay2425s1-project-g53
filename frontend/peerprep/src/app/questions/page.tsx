@@ -1,13 +1,13 @@
 
 'use client'
-import React, { useState, useEffect, FormEvent } from 'react';
+import React, { useState, useEffect } from 'react';
 
 
 interface Question {
   id: number;
   title: string;
   description: string;
-  categories: [string];
+  categories: [{ name: string }];
   complexity: string;
 }
 
@@ -25,7 +25,7 @@ export default function Page() {
   }
 
   useEffect(() => {
-    fetch("http://127.0.0.1:5000/questions/")
+    fetch("/api/questions")
       .then(res => res.json())
       .then(data => { setQuestions(data) });
   }, []);
@@ -44,7 +44,7 @@ export default function Page() {
                 <th className="col-1" scope="col">ID</th>
                 <th className="col-4" scope="col">Title</th>
                 <th className="col-6" scope="col">Description</th>
-                <th className="col-4" scope="col">Category</th>
+                <th className="col-3" scope="col">Category</th>
                 <th className="col-2" scope="col">Complexity</th>
                 <th className="col-1" scope="col"></th>
               </tr>
@@ -56,14 +56,14 @@ export default function Page() {
                     <th scope="row">{question.id}</th>
                     <td>{question.title}</td>
                     <td className="text-truncate">{question.description}</td>
-                    <td>{question.categories.join(", ")}</td>
+                    <td>{question.categories.map(c => c.name).join(", ")}</td>
                     <td>{question.complexity}</td>
                     <td><button className="btn" onClick={() => toggleExpanded(question.id)}><i className="bi-chevron-down"></i> </button></td>
                   </tr>
                   {expandedQuestions.has(question.id) && (
                     <tr>
                       <td className="p-3 text-wrap" colSpan={3}><p style={{ whiteSpace: "pre-line" }}>{question.description}</p></td>
-                      <td className="p-3 text-wrap" colSpan={3}>{question.categories.join(", ")}</td>
+                      <td className="p-3 text-wrap" colSpan={3}>{question.categories.map(c => c.name).join(", ")}</td>
                     </tr>
                   )}
                 </>
