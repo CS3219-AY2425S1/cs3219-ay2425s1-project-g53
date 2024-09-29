@@ -52,7 +52,7 @@ def create_question(db: Session, question: schemas.QuestionCreate) -> models.Que
 def read_questions(db: Session, skip: int = 0, limit: int | None = None):
     try:
         # Query the questions with offset and limit
-        questions = db.query(models.Question).offset(skip).limit(limit).all()
+        questions = db.query(models.Question).order_by(models.Question.id).offset(skip).limit(limit).all()
 
         if not questions:
             raise HTTPException(status_code=404, detail=f"Questions not found")
@@ -197,7 +197,7 @@ def read_question_by_title(db: Session, question_title: str):
 def update_question(db: Session, question_id: int, question_update: schemas.QuestionUpdate) -> models.Question:
     try:
         # Fetch the existing question
-        question = db.query(models.Question).filter(models.Question.id == question_id).first()
+        question = db.query(models.Question).order_by(models.Question.id).filter(models.Question.id == question_id).first()
 
         # If question not found
         if question is None:
@@ -242,7 +242,7 @@ def update_question(db: Session, question_id: int, question_update: schemas.Ques
 def delete_question(db: Session, question_id: int):
     try:
         # Fetch the question to delete
-        question = db.query(models.Question).filter(models.Question.id == question_id).first()
+        question = db.query(models.Question).order_by(models.Question.id).filter(models.Question.id == question_id).first()
 
         # If question not found
         if question is None:
@@ -272,7 +272,7 @@ def delete_question(db: Session, question_id: int):
 def delete_question_by_title(db: Session, question_title: str):
     try:
         # Fetch the question to delete
-        question = db.query(models.Question).filter(models.Question.title == question_title).first()
+        question = db.query(models.Question).order_by(models.Question.id).filter(models.Question.title == question_title).first()
 
         # If question not found
         if question is None:
