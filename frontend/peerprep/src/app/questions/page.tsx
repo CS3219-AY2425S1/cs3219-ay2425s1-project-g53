@@ -1,6 +1,7 @@
 
 'use client'
 import React, { useState, useEffect } from 'react';
+import useSWR from 'swr'
 
 
 interface Question {
@@ -13,7 +14,6 @@ interface Question {
 
 
 export default function Page() {
-  const [questions, setQuestions] = useState<Question[]>([]);
   const [expandedQuestions, setExpandedQuestions] = useState<Set<number>>(new Set());
 
   const toggleExpanded = (id: number) => {
@@ -23,16 +23,16 @@ export default function Page() {
       setExpandedQuestions(prev => new Set([...prev, id]))
     }
   }
-
-  useEffect(() => {
-    fetch("/api/questions")
-      .then(res => res.json())
-      .then(data => { setQuestions(data) });
-  }, []);
+  const { data, error, isLoading } = useSWR<[Question], any, string>('/api/questions', key => fetch(key).then(res => res.json()))
 
   // Render form and questions
   return (
     <div className="container-fluid">
+      {(error || isLoading) && (
+        <div className="col-12 mt-5 ps-3 fs-3 justify-content-center">
+          {isLoading ? <p>Loading...</p> : <p className="text-danger">Questions not available</p>}
+        </div>
+      )}
       <div className="row mx-3 mt-5" >
         <div className="overflow-y-auto overflow-x-hidden" style={{ maxHeight: "90vh" }} >
           <table className="table table-striped mh-100" style={{
@@ -50,7 +50,7 @@ export default function Page() {
               </tr>
             </thead>
             <tbody >
-              {questions.map(question => (
+              {data && data.map(question => (
                 <>
                   <tr>
                     <th scope="row">{question.id}</th>
@@ -68,6 +68,7 @@ export default function Page() {
                   )}
                 </>
               ))}
+
             </tbody>
           </table>
         </div>
