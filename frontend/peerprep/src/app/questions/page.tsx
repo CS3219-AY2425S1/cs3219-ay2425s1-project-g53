@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import useSWR from 'swr'
 import AddQuestionForm from '../ui/add-question-form';
+import EditQuestionForm from '../ui/edit-question-form';
 
 
 interface Question {
@@ -16,6 +17,7 @@ interface Question {
 
 export default function Page() {
   const [expandedQuestions, setExpandedQuestions] = useState<Set<number>>(new Set());
+  const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
 
   const toggleExpanded = (id: number) => {
     if (expandedQuestions.has(id)) {
@@ -24,12 +26,32 @@ export default function Page() {
       setExpandedQuestions(prev => new Set([...prev, id]))
     }
   }
+  
   const { data, error, isLoading, mutate } = useSWR<Question[], any, string>('/api/questions', key => fetch(key).then(res => res.json()))
+
+  const handleDelete = async (id: number) => {
+    const confirmed = window.confirm("Are you sure you want to delete this question?");
+    if (confirmed) {
+      await fetch(`/api/questions/id/${id}`, { method: 'DELETE' });
+      mutate(prev => prev ? prev.filter(question => question.id !== id) : []);
+    }
+  };
+
+  const handleUpdate = async (updatedQuestion: Question) => {
+    await fetch(`/api/questions/${updatedQuestion.id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updatedQuestion),
+    });
+    mutate(prev => prev ? prev.map(q => (q.id === updatedQuestion.id ? updatedQuestion : q)) : []);
+    setEditingQuestion(null);
+  };
 
   // Render form and questions
   return (
     <div className="container-fluid">
       <AddQuestionForm className="mt-5" onQuestionCreated={q => mutate(prev => prev ? [...prev, q] : [])}/>
+
       {(error || isLoading) && (
         <div className="col-12 mt-5 ps-3 fs-3 justify-content-center">
           {isLoading ? <p>Loading...</p> : <p className="text-danger">Questions not available</p>}
@@ -64,8 +86,14 @@ export default function Page() {
                   </tr>
                   {expandedQuestions.has(question.id) && (
                     <tr>
-                      <td className="p-3 text-wrap" colSpan={3}><p style={{ whiteSpace: "pre-line" }}>{question.description}</p></td>
-                      <td className="p-3 text-wrap" colSpan={3}>{question.categories.map(c => c.name).join(", ")}</td>
+                      <td className="p-3 text-wrap" colSpan={12}>
+                          <EditQuestionForm 
+                            question={question} 
+                            onUpdate={handleUpdate} 
+                            onCancel={() => toggleExpanded(question.id)} 
+                            onDelete={handleDelete}
+                          />
+                        </td>
                     </tr>
                   )}
                 </React.Fragment>
