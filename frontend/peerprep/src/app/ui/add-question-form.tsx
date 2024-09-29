@@ -23,7 +23,7 @@ interface Category {
 }
 
 function useCategories() {
-  const { data, error, isLoading } = useSWR<Category[], undefined, string>("/api/questions/categories", key => fetch(key).then(res => res.json()));
+  const { data, error, isLoading } = useSWR<Category[], undefined, string>("/api/categories", key => fetch(key).then(res => res.json()));
 
   return {
     categories: data,
@@ -33,7 +33,7 @@ function useCategories() {
 }
 
 function useComplexities() {
-  const { data, error, isLoading } = useSWR<Complexity[], undefined, string>("/api/questions/complexities", key => fetch(key).then(res => res.json()));
+  const { data, error, isLoading } = useSWR<Complexity[], undefined, string>("/api/complexities", key => fetch(key).then(res => res.json()));
 
   return {
     complexities: data,
@@ -61,7 +61,7 @@ export default function AddQuestionForm(props: { className: string, onQuestionCr
       return false;
     }
     setWaiting(true);
-    fetch("/api/questions", {
+    fetch("/api/questions/create", {
       method: "POST",
       body: JSON.stringify(formData),
       headers: {
