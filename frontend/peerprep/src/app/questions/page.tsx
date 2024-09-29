@@ -2,6 +2,7 @@
 'use client'
 import React, { useState, useEffect } from 'react';
 import useSWR from 'swr'
+import AddQuestionForm from '../ui/add-question-form';
 
 
 interface Question {
@@ -23,11 +24,12 @@ export default function Page() {
       setExpandedQuestions(prev => new Set([...prev, id]))
     }
   }
-  const { data, error, isLoading } = useSWR<[Question], any, string>('/api/questions', key => fetch(key).then(res => res.json()))
+  const { data, error, isLoading, mutate } = useSWR<Question[], any, string>('/api/questions', key => fetch(key).then(res => res.json()))
 
   // Render form and questions
   return (
     <div className="container-fluid">
+      <AddQuestionForm className="mt-5" onQuestionCreated={q => mutate(prev => prev ? [...prev, q] : [])}/>
       {(error || isLoading) && (
         <div className="col-12 mt-5 ps-3 fs-3 justify-content-center">
           {isLoading ? <p>Loading...</p> : <p className="text-danger">Questions not available</p>}
@@ -50,8 +52,8 @@ export default function Page() {
               </tr>
             </thead>
             <tbody >
-              {data && data.map(question => (
-                <>
+              {data && data.map((question, index) => (
+                <React.Fragment key={question.id}>
                   <tr>
                     <th scope="row">{question.id}</th>
                     <td>{question.title}</td>
@@ -66,7 +68,7 @@ export default function Page() {
                       <td className="p-3 text-wrap" colSpan={3}>{question.categories.map(c => c.name).join(", ")}</td>
                     </tr>
                   )}
-                </>
+                </React.Fragment>
               ))}
 
             </tbody>
