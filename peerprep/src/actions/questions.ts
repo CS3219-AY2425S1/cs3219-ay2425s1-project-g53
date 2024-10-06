@@ -26,20 +26,22 @@ export interface QuestionAdd {
   complexity: Complexity
 }
 
+const API_URL = process.env.QUESTION_API_URL;
+
 export async function getCategories(): Promise<Category[]> {
-  return await fetch("http://localhost:5000/categories", { cache: "no-store" })
+  return await fetch(`${API_URL}/categories`, { cache: "no-store" })
     .then(r => r.ok ? r : Promise.reject("Database error"))
     .then(r => r.json());
 }
 
 export async function getQuestions(): Promise<Question[]> {
-  return await fetch("http://localhost:5000/questions", { cache: "no-store" })
+  return await fetch(`${API_URL}/questions`, { cache: "no-store" })
     .then(r => r.ok ? r : Promise.reject("Database error"))
     .then(r => r.json());
 }
 
 export async function getQuestion(id: number): Promise<Question> {
-  return await fetch(`http://localhost:5000/questions/id/${id}`)
+  return await fetch(`${API_URL}/questions/id/${id}`)
     .then(r => r.ok ? r : Promise.reject("Invalid question ID"))
     .then(r => r.json())
     .catch(e => { throw new Error(e) });

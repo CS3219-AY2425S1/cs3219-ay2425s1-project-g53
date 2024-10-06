@@ -21,6 +21,8 @@ services:
       dockerfile: Dockerfile
     ports:
       - "3000:3000"
+    environment:
+      - QUESTION_API_URL=http://fastapi:8080
 
   postgres:
     image: postgres:14
