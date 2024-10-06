@@ -38,6 +38,14 @@ export async function getQuestions(): Promise<Question[]> {
     .then(r => r.json());
 }
 
+export async function getQuestion(id: number): Promise<Question> {
+  return await fetch(`http://localhost:5000/questions/id/${id}`)
+    .then(r => r.ok ? r : Promise.reject("Invalid question ID"))
+    .then(r => r.json())
+    .catch(e => { throw new Error(e) });
+
+}
+
 export async function addQuestion(question: QuestionAdd): Promise<Question> {
 
   const res: Question = await fetch("http://localhost:5000/questions/create", {

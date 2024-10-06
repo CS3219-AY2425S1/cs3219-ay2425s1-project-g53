@@ -1,13 +1,10 @@
-import { Question } from "@/actions/questions";
+import { getQuestion, Question } from "@/actions/questions";
 import { Text, Divider, Stack, Title, Badge, Group } from "@mantine/core";
 
 export default async function Page({ params }: { params: { id: number } }) {
   const id = params.id;
 
-  const question: Question = await fetch(`http://localhost:5000/questions/id/${id}`)
-    .then(r => r.ok ? r : Promise.reject("Invalid question ID"))
-    .then(r => r.json())
-    .catch(e => { throw new Error(e) });
+  const question: Question = await getQuestion(params.id);
 
   const difficultyBadgeColor = (() => {
     switch (question.complexity) {
