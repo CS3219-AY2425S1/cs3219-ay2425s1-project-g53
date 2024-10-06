@@ -50,7 +50,7 @@ export async function getQuestion(id: number): Promise<Question> {
 
 export async function addQuestion(question: QuestionAdd): Promise<Question> {
 
-  const res: Question = await fetch("http://localhost:5000/questions/create", {
+  const res: Question = await fetch(`${API_URL}/questions/create`, {
     method: "POST",
     body: JSON.stringify(question),
     headers: { "Content-type": "application/json" }
