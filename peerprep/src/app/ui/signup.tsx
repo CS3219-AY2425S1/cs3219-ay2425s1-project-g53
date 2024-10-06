@@ -19,7 +19,7 @@ export default function SignupForm() {
   });
 
   return (
-    <Stack align="stretch" w="35%">
+    <Stack align="stretch" w={600}>
       <Title order={1} ta="center">Welcome to PeerPrep</Title>
       <TextInput mt="xl" placeholder="Username" {...form.getInputProps("username")} />
       <PasswordInput placeholder="Password" {...form.getInputProps("password")} />
