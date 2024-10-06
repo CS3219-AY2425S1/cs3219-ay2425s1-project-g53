@@ -1,0 +1,35 @@
+version: '3.8'
+services:
+  fastapi:
+    build:
+      context: ./questions-service
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+    environment:
+      # Set DB_URL to connect FastAPI to the PostgreSQL container
+      - DB_URL=postgresql://admin:admin@postgres:5432/pp-crud
+    working_dir: /questions-service  # Set the working directory for FastAPI
+
+  nextjs:
+    build:
+      context: ./peerprep
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+
+  postgres:
+    image: postgres:14
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: pp-crud
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+volumes:
+  postgres_data:
