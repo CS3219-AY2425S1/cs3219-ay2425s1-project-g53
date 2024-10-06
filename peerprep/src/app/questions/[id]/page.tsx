@@ -1,5 +1,5 @@
 import { getQuestion, Question } from "@/actions/questions";
-import { Text, Divider, Stack, Title, Badge, Group } from "@mantine/core";
+import { Text, Divider, Stack, Title, Badge, Group, ScrollArea, Flex, Box } from "@mantine/core";
 
 export default async function Page({ params }: { params: { id: number } }) {
   const id = params.id;
@@ -18,15 +18,21 @@ export default async function Page({ params }: { params: { id: number } }) {
   })()
 
   return (
-    <Stack py="md" px="md">
-      <Group>
-        <Title size="xl">{question.title}</Title>
-        <Badge color={difficultyBadgeColor}>{question.complexity}</Badge>
-        <Divider size="sm" orientation="vertical" />
-        {question.categories.map(c => <Badge key={c.id}>{c.name}</Badge>)}
+    <Stack py="md" px="md" h="calc(100vh - 60px)">
+      <Group wrap="nowrap">
+        <Group flex="0 0 auto" h="100%">
+          <Title size="xl">{question.title}</Title>
+          <Badge color={difficultyBadgeColor}>{question.complexity}</Badge>
+          <Divider size="sm" orientation="vertical" />
+        </Group>
+        <Group>
+          {question.categories.map(c => <Badge key={c.id}>{c.name}</Badge>)}
+        </Group>
       </Group>
       <Divider />
-      <Text style={{ whiteSpace: "pre-wrap" }}>{question.description}</Text>
+      <ScrollArea >
+        <Text style={{ whiteSpace: "pre-wrap" }}>{question.description}</Text>
+      </ScrollArea>
     </Stack>
   )
 }
