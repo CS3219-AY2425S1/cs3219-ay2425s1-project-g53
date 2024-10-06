@@ -2,7 +2,7 @@ import { Button, Center, Container, Stack, Text, Title } from "@mantine/core";
 import Image from "next/image";
 import Link from "next/link";
 
-export default function Home() {
+export default async function Home() {
   return (
     <Center h="80vh" w="100%">
       <Stack justify="center">
