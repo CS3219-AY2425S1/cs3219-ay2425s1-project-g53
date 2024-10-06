@@ -1,6 +1,6 @@
 "use client"
 
-import { Question } from "@/app/lib/questions"
+import { Question } from "@/actions/questions"
 import { Table, Text } from "@mantine/core";
 
 export default function QuestionTable(props: { questions: Question[] }) {

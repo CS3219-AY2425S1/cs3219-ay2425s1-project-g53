@@ -3,7 +3,7 @@
 
 import useSWR from 'swr'
 import { useForm, zodResolver } from '@mantine/form'
-import { addQuestion, Category, Complexity, QuestionAdd, Question } from '@/app/lib/questions'
+import { addQuestion, Category, Complexity, QuestionAdd, Question } from '@/actions/questions'
 import { Box, Button, Grid, LoadingOverlay, MultiSelect, Select, Textarea, TextInput } from '@mantine/core'
 import { z } from 'zod'
 import { describe } from 'node:test'

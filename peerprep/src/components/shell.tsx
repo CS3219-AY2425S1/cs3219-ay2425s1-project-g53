@@ -10,7 +10,7 @@ export default function Shell({ children }: { children: Readonly<React.ReactNode
   const [opened, { toggle }] = useDisclosure();
   return (
     <AppShell
-      header={{ height: "5vh"}}
+      header={{ height: 60 }}
       navbar={{
         width: "15vw",
         breakpoint: "sm",

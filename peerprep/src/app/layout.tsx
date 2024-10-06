@@ -2,12 +2,12 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import Link from "next/link";
-import MainIcon from './icons/MainLogo.svg'
+import MainIcon from '@/icons/MainLogo.svg'
 import Image from "next/image";
 import '@mantine/core/styles.css'
 import { AppShell,   ColorSchemeScript, MantineProvider } from "@mantine/core";
-import Header from "./ui/header";
-import Shell from "./ui/shell";
+import Header from "@/components/header";
+import Shell from "@/components/shell";
 
 export const metadata: Metadata = {
   title: "Create Next App",

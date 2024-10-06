@@ -6,7 +6,7 @@ export default function Home() {
   return (
     <Center h="80vh" w="100%">
       <Stack justify="center">
-        <Title order={1} ta="center">Welcome to PeerPrep</Title>
+        <Title order={1} mb="xl" ta="center">Welcome to PeerPrep</Title>
         <Link href="/questions">
           <Button w="100%">Question List</Button>
         </Link>

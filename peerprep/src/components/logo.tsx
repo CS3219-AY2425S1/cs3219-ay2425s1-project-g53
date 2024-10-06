@@ -1,4 +1,4 @@
-import MainIcon from '@/app/icons/MainLogo.svg'
+import MainIcon from '@/icons/MainLogo.svg'
 import NextImage from 'next/image'
 import { Group, Image, NavLink, Text, useMantineTheme } from '@mantine/core'
 import Link from 'next/link'
