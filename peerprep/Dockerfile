@@ -21,4 +21,4 @@ RUN pnpm run build
 EXPOSE 3000
 
 # Start the Next.js app in development mode
-CMD ["pnpm", "run", "dev"]
+CMD ["pnpm", "start"]

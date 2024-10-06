@@ -84,7 +84,7 @@ export default function AddQuestionForm(props: { className: string, onQuestionCr
       <div className="col-3">
         <select className="form-select" id="category-select" multiple onChange={(e) => {
           const options = e.target.selectedOptions;
-          let newOptions = [];
+          const newOptions: string[] = [];
           for (let i = 0; i < options.length; ++i) {
             newOptions.push(options[i].value);
           }

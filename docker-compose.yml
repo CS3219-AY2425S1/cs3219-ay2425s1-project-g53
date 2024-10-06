@@ -5,9 +5,11 @@ services:
       context: ./questions-service
       dockerfile: Dockerfile
     ports:
-      - "8080:8080"
+      - "8085:8080"
     depends_on:
-      - postgres
+      postgres:
+        condition: service_started
+        restart: true
     environment:
       # Set DB_URL to connect FastAPI to the PostgreSQL container
       - DB_URL=postgresql://admin:admin@postgres:5432/pp-crud
@@ -29,7 +31,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
-      - "5432:5432"
+      - "5433:5432"
 
 volumes:
   postgres_data:

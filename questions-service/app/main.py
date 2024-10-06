@@ -21,7 +21,7 @@ if "questions" not in table_names or "categories" not in table_names:
     def populate(target: MetaData, connection: Connection, **kwargs):
         Session = sessionmaker(bind=connection)
         session = Session()
-        with open("leetcode.json", mode="r") as f:
+        with open("app/leetcode.json", mode="r") as f:
             data = json5.load(f)
             for entry in data:
                 try:
@@ -56,6 +56,9 @@ if "questions" not in table_names or "categories" not in table_names:
                     print(e)
                 except KeyError as e:
                     print(e)
+        categories = ["Data Structures", "Brainteaser", "Stack", "Queue", "Dynamic Programming", "Bit Manipulation"]
+        for c in categories:
+            crud.create_category(session, schemas.CategoryCreate(name=c))
         session.close()
 
     models.Base.metadata.create_all(bind=engine)

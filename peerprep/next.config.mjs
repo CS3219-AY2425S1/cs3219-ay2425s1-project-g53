@@ -1,11 +1,14 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
  
   async rewrites(){
     return [
       {
         source: '/api/:path*',
-        destination: 'http://127.0.0.1:5000/:path*'
+        destination: 'http://fastapi:8080/:path*'
       }
     ]
   }

@@ -1,6 +1,6 @@
 
 'use client'
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import useSWR from 'swr'
 import AddQuestionForm from '../ui/add-question-form';
 import EditQuestionForm from '../ui/edit-question-form';

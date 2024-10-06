@@ -15,4 +15,4 @@ COPY . /questions-service
 EXPOSE 8080
 
 # Run the FastAPI app with Uvicorn
-CMD ["fastapi", "dev", "--app", "app.main:app", "--port", "8080"]
+CMD ["fastapi", "run", "--port", "8080"]
