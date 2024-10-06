@@ -8,8 +8,8 @@ WORKDIR /questions-sevice
 COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the FastAPI application code
-COPY ./app /questions-service/app
+# Copy the FastAPI application code (everything except what's in .dockerignore)
+COPY . /questions-service
 
 # Expose the FastAPI port (8080)
 EXPOSE 8080
