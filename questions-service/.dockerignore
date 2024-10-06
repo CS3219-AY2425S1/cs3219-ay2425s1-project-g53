@@ -1,0 +1,4 @@
+.envrc
+.gitignore
+sample_data.json
+shell.nix
