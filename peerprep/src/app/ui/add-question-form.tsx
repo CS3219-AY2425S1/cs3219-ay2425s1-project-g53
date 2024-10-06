@@ -1,25 +1,21 @@
 
-import React, { FormEvent, useState } from 'react'
-import Question from '../lib/question'
+'use client'
+
 import useSWR from 'swr'
-import { AppProps } from 'next/app'
-
-
-enum Complexity {
-  EASY = "Easy",
-  MEDIUM = "Medium",
-  HARD = "Hard"
-}
+import { useForm, zodResolver } from '@mantine/form'
+import { addQuestion, Category, Complexity, QuestionAdd, Question } from '@/app/lib/questions'
+import { Box, Button, Grid, LoadingOverlay, MultiSelect, Select, Textarea, TextInput } from '@mantine/core'
+import { z } from 'zod'
+import { describe } from 'node:test'
+import { useFormStatus } from 'react-dom'
+import { useDisclosure } from '@mantine/hooks'
+import { useEffect } from 'react'
 
 interface FormData {
   title: string,
   description: string,
-  categories: Category[],
-  complexity: Complexity | null
-}
-
-interface Category {
-  name: string
+  categories: string[],
+  complexity: Complexity | ""
 }
 
 function useCategories() {
@@ -42,81 +38,91 @@ function useComplexities() {
   }
 }
 
-export default function AddQuestionForm(props: { className: string, onQuestionCreated: (question: Question) => void }) {
-  const [formData, setFormData] = useState<FormData>({ title: "", description: "", categories: [], complexity: null });
-  const [formError, setFormError] = useState<string>("");
-  const { categories, categoriesLoading, categoriesError } = useCategories();
-  const { complexities, complexitiesLoading, complexitiesError } = useComplexities();
-  const [waiting, setWaiting] = useState<boolean>(false);
+export default function AddQuestionForm(props: { categories: Category[], onQuestionCreated?: ((question: Question) => void) }) {
+  const [submitting, handlers] = useDisclosure();
+  const complexities: Complexity[] = ["Easy", "Medium", "Hard"]
 
+  const schema = z.object({
+    title: z.string().min(2, { message: "Title should have at least 2 letters" }),
+    description: z.string().min(5, { message: "Description should have at least 5 letters" }),
+    categories: z.string().array().nonempty({ message: "Choose at least 1 catetgory" }),
+    complexity: z.enum(["Easy", "Medium", "Hard"], { message: "Choose a category" })
+  });
+  const form = useForm<FormData, (values: FormData) => QuestionAdd>({
+    mode: "uncontrolled",
+    initialValues: {
+      title: "",
+      description: "",
+      categories: [],
+      complexity: ""
+    },
+    transformValues: values => ({
+      ...values,
+      categories: values.categories.map(s => ({ name: s })),
+      complexity: values.complexity as Complexity
+    }),
+    validate: zodResolver(schema)
+  })
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (formData.categories.length === 0) {
-      setFormError("Select at least 1 category");
-      return false;
-    }
-    if (!formData.complexity) {
-      setFormError("Select form complexity");
-      return false;
-    }
-    setWaiting(true);
-    fetch("/api/questions/create", {
-      method: "POST",
-      body: JSON.stringify(formData),
-      headers: {
-        "Content-type": "application/json; charset=UTF-8"
+  const handleSubmit = form.onSubmit(v => {
+    async function temp() {
+      handlers.open();
+      // await new Promise(r => setTimeout(r, 3000));
+      try {
+        const newQuestion = await addQuestion(v);
+        form.reset();
+        props.onQuestionCreated?.(newQuestion);
+      } catch (e) {
+        console.log(e);
       }
-    }).then(response => response.json())
-      .then(o => props.onQuestionCreated(o));
-    setWaiting(false);
-    setFormData({ title: "", description: "", categories: [], complexity: null });
-    return false;
-  }
+      handlers.close();
+    }
+    temp();
+  })
 
-
-  return (
-    <form className={`row g-3 ${props.className}`} onSubmit={handleSubmit}>
-      <div className="col-4">
-        <input className="form-control" type="text" required placeholder="Title" value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} />
-      </div>
-      <label htmlFor='category-select' className="form-label col-1">Categories: </label>
-      <div className="col-3">
-        <select className="form-select" id="category-select" multiple onChange={(e) => {
-          const options = e.target.selectedOptions;
-          const newOptions: string[] = [];
-          for (let i = 0; i < options.length; ++i) {
-            newOptions.push(options[i].value);
-          }
-          setFormData(prev => { return { ...prev, categories: newOptions.map(n => { return { name: n } }) } });
-          console.log(newOptions);
-        }}>
-          {categories && categories.map(c => c.name).map(n => (<option key={n} value={n}>{n}</option>))}
-        </select>
-      </div>
-      <div className="col-4">
-        <select className="form-select" id="complexities" value={formData.complexity ? formData.complexity.toString() : ""} onChange={(e) => setFormData({ ...formData, complexity: e.target.value as Complexity })}>
-          <option value="" disabled>Complexity</option>
-          {complexities && complexities.map((s, i) => {
-            return <option key={s} value={s}>{s}</option>
-          })}
-        </select>
-      </div>
-      <div className="col-12">
-        <textarea className="form-control" rows={6} placeholder="Description" required value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} />
-      </div>
-      <div className="col-12">
-        {waiting
-          ?
-          <button className="btn btn-primary" type="button" disabled>
-            <span className="spinner-border spinner-border-sm" aria-hidden="true"></span>
-            <span role="status">Loading...</span>
-          </button>
-          :
-          <button className="btn btn-primary" type="submit">Add Question</button>
-        }
-        <label className="text-danger ms-4">{formError}</label>
-      </div>
+  const temp = (
+    <form onSubmit={handleSubmit}>
+      <Grid>
+        <Grid.Col span={4}>
+          <TextInput
+            placeholder='Title'
+            key={form.key("title")}
+            {...form.getInputProps("title")}
+          />
+        </Grid.Col>
+        <Grid.Col span={4}>
+          <MultiSelect
+            placeholder='Categories'
+            data={props.categories.map(c => c.name)}
+            key={form.key("categories")}
+            {...form.getInputProps("categories")}
+          />
+        </Grid.Col>
+        <Grid.Col span={4}>
+          <Select
+            placeholder='Complexity'
+            data={complexities ?? []}
+            key={form.key("complexity")}
+            {...form.getInputProps("complexity")}
+          />
+        </Grid.Col>
+        <Grid.Col span={12}>
+          <Textarea
+            placeholder='Description'
+            key={form.key("description")}
+            {...form.getInputProps("description")}
+          />
+        </Grid.Col>
+        <Grid.Col span="content">
+          <Box pos="relative">
+            <LoadingOverlay visible={submitting} />
+            <Button type="submit">
+              Add Question
+            </Button>
+          </Box>
+        </Grid.Col>
+      </Grid>
     </form>
   )
+  return temp;
 }  

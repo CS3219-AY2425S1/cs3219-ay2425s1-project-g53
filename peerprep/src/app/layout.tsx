@@ -4,17 +4,10 @@ import "./globals.css";
 import Link from "next/link";
 import MainIcon from './icons/MainLogo.svg'
 import Image from "next/image";
-
-const geistSans = localFont({
-  src: "./fonts/GeistVF.woff",
-  variable: "--font-geist-sans",
-  weight: "100 900",
-});
-const geistMono = localFont({
-  src: "./fonts/GeistMonoVF.woff",
-  variable: "--font-geist-mono",
-  weight: "100 900",
-});
+import '@mantine/core/styles.css'
+import { AppShell,   ColorSchemeScript, MantineProvider } from "@mantine/core";
+import Header from "./ui/header";
+import Shell from "./ui/shell";
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -27,25 +20,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" data-bs-theme="dark">
+    <html lang="en">
       <head>
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossOrigin="anonymous" />
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+        <ColorSchemeScript defaultColorScheme="dark" />
       </head>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        <nav className="navbar bg-secondary">
-          <div className="container-fluid">
-            <Link href="/questions" className="navbar-brand">
-              <Image className="me-1" priority src={MainIcon} alt="PeerPrep" height={32} width={32} />PeerPrep
-            </Link>
-          </div>
-
-        </nav>
-        {children}
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossOrigin="anonymous">
-        </script>
+      <body>
+        <MantineProvider defaultColorScheme="dark">
+          <Shell children={children}/>
+        </MantineProvider>
       </body>
     </html>
   );

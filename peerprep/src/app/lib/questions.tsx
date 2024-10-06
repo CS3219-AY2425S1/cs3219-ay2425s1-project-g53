@@ -1,0 +1,59 @@
+"use server"
+import { revalidatePath } from "next/cache";
+
+export type Complexity = "Easy" | "Medium" | "Hard";
+export interface Category {
+  id: number
+  name: string
+}
+
+export interface Error {
+  message: string
+}
+
+export interface Question {
+  id: number,
+  title: string;
+  description: string;
+  categories: { id: number, name: string }[];
+  complexity: Complexity;
+}
+
+export interface QuestionAdd {
+  title: string,
+  description: string,
+  categories: { name: string }[],
+  complexity: Complexity
+}
+
+export async function getCategories(): Promise<Category[]> {
+  return await fetch("http://localhost:5000/categories", { cache: "no-store" })
+    .then(r => r.ok ? r : Promise.reject("Database error"))
+    .then(r => r.json());
+}
+
+export async function getQuestions(): Promise<Question[]> {
+  return await fetch("http://localhost:5000/questions", { cache: "no-store" })
+    .then(r => r.ok ? r : Promise.reject("Database error"))
+    .then(r => r.json());
+}
+
+export async function addQuestion(question: QuestionAdd): Promise<Question> {
+
+  const res: Question = await fetch("http://localhost:5000/questions/create", {
+    method: "POST",
+    body: JSON.stringify(question),
+    headers: { "Content-type": "application/json" }
+  }).then(r => {
+    if (r.ok) {
+      return r.json();
+    } else {
+      console.log(r.json());
+      throw new Error("Failed to add question");
+    }
+  });
+
+  revalidatePath("/questions");
+
+  return res;
+}
