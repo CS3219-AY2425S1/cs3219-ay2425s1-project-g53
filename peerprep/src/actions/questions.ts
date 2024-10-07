@@ -1,50 +1,64 @@
 "use server"
 import { revalidatePath } from "next/cache";
+import { z } from 'zod'
 
-export type Complexity = "Easy" | "Medium" | "Hard";
-export interface Category {
-  id: number
-  name: string
-}
+const ComplexitySchema = z.enum(["Easy", "Medium", "Hard"]);
 
-export interface Error {
-  message: string
-}
+const CategorySchema = z.object({
+  id: z.number(),
+  name: z.string()
+});
 
-export interface Question {
-  id: number,
-  title: string;
-  description: string;
-  categories: { id: number, name: string }[];
-  complexity: Complexity;
-}
+const QuestionSchema = z.object({
+  id: z.number(),
+  title: z.string(),
+  description: z.string(),
+  categories: z.array(CategorySchema),
+  complexity: ComplexitySchema
+});
 
-export interface QuestionAdd {
-  title: string,
-  description: string,
-  categories: { name: string }[],
-  complexity: Complexity
-}
+const QuestionAddSchema = z.object({
+  title: z.string(),
+  description: z.string(),
+  categories: z.array(z.object({
+    name: z.string()
+  })),
+  complexity: ComplexitySchema
+})
+
+export type Category = z.infer<typeof CategorySchema>;
+export type Complexity = z.infer<typeof ComplexitySchema>;
+export type Question = z.infer<typeof QuestionSchema>;
+export type QuestionAdd = z.infer<typeof QuestionAddSchema>;
 
 const API_URL = process.env.QUESTION_API_URL;
 
+
+async function checkOk(r: Response) {
+  if (r.ok) {
+    return r;
+  }
+  throw new Error("Non ok response");
+}
+
 export async function getCategories(): Promise<Category[]> {
-  return await fetch(`${API_URL}/categories`, { cache: "no-store" })
-    .then(r => r.ok ? r : Promise.reject("Database error"))
-    .then(r => r.json());
+  return await fetch(`${API_URL}/categories`, { cache: "no-store" }).then(r => checkOk(r))
+    .then(r => r.json())
+    .then(z.array(CategorySchema).parse)
 }
 
 export async function getQuestions(): Promise<Question[]> {
   return await fetch(`${API_URL}/questions`, { cache: "no-store" })
-    .then(r => r.ok ? r : Promise.reject("Database error"))
-    .then(r => r.json());
+    .then(r => checkOk(r))
+    .then(r => r.json())
+    .then(z.array(QuestionSchema).parse)
 }
 
 export async function getQuestion(id: number): Promise<Question> {
   return await fetch(`${API_URL}/questions/id/${id}`)
-    .then(r => r.ok ? r : Promise.reject("Invalid question ID"))
+    .then(r => checkOk(r))
     .then(r => r.json())
-    .catch(e => { throw new Error(e) });
+    .then(QuestionSchema.parse);
 
 }
 
@@ -55,13 +69,9 @@ export async function addQuestion(question: QuestionAdd): Promise<Question> {
     body: JSON.stringify(question),
     headers: { "Content-type": "application/json" }
   }).then(r => {
-    if (r.ok) {
-      return r.json();
-    } else {
-      console.log(r.json());
-      throw new Error("Failed to add question");
-    }
-  });
+    return checkOk(r)
+  }).then(r => r.json())
+    .then(QuestionSchema.parse);
 
   revalidatePath("/questions");
 

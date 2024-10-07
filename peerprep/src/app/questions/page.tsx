@@ -3,13 +3,11 @@ import useSWR from 'swr'
 import AddQuestionForm from '@/components/add-question-form';
 import EditQuestionForm from '@/components/edit-question-form';
 import QuestionTable from '@/components/question-table';
-import { getCategories, getQuestions, Question } from '@/actions/questions'
+import { Category, getCategories, getQuestions, Question } from '@/actions/questions'
 import { Box, Stack } from '@mantine/core';
 
 
 export default async function Page() {
-  // const questions = await getQuestions();
-  // const categories = await getCategories();
   const [categories, questions] = await Promise.all([getCategories(), getQuestions()]);
 
   return (
