@@ -26,6 +26,9 @@ importers:
       mantine-form-zod-resolver:
         specifier: ^1.1.0
         version: 1.1.0(@mantine/form@7.13.2(react@18.3.1))(zod@3.23.8)
+      neverthrow:
+        specifier: ^8.0.0
+        version: 8.0.0
       next:
         specifier: 14.2.13
         version: 14.2.13(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -1066,6 +1069,10 @@ packages:
 
   natural-compare@1.4.0:
     resolution: {integrity: sha512-OWND8ei3VtNC9h7V60qff3SVobHr996CTwgxubgyQYEpg290h9J0buyECNNJexkFm5sOajh5G116RYA1c8ZMSw==}
+
+  neverthrow@8.0.0:
+    resolution: {integrity: sha512-SX2Z50+U27I+CF3NwHE9J8MB6+bYRRub3U+1nAKxnL6c+2vW2l/WsYEC0e3Wqg8DwiJvrquqE0YhxlVTzGJGsg==}
+    engines: {node: '>=18'}
 
   next@14.2.13:
     resolution: {integrity: sha512-BseY9YNw8QJSwLYD7hlZzl6QVDoSFHL/URN5K64kVEVpCsSOWeyjbIGK+dZUaRViHTaMQX8aqmnn0PHBbGZezg==}
@@ -2805,6 +2812,8 @@ snapshots:
   nanoid@3.3.7: {}
 
   natural-compare@1.4.0: {}
+
+  neverthrow@8.0.0: {}
 
   next@14.2.13(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
     dependencies:
