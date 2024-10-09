@@ -1,15 +1,21 @@
 "use client"
 
-import { redirectAction } from "@/actions/utils";
-import { useSignup } from "@/lib/hooks/user";
-import { Alert, Button, Center, PasswordInput, Stack, TextInput, Title } from "@mantine/core";
+import { createUser, currentUser, login, verifyCurrentUser } from "@/actions/user";
+import { pipeResult } from "@/lib/utils";
+import { Button, Center, PasswordInput, Stack, TextInput, Title } from "@mantine/core";
 import { useForm, zodResolver } from "@mantine/form";
+import { notifications } from "@mantine/notifications";
+import { fromPromise, ok, safeTry } from "neverthrow";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 import { z } from 'zod'
 
 
 
 export default function SignupForm() {
-  const { signup, signupError } = useSignup("/user/login");
+  const params = useSearchParams();
+  const redirect = params.get("redirect") ?? "/";
+  const router = useRouter();
 
   const schema = z.object({
     username: z.string().min(3, { message: "Username must have at least 3 letters" }).refine(s => !(/\s/).test(s), { message: "No whitespace allowed" }),
@@ -21,6 +27,7 @@ export default function SignupForm() {
   type FormData = z.infer<typeof schema>;
 
   const form = useForm<FormData>({
+    mode: "uncontrolled",
     initialValues: {
       username: "",
       email: "",
@@ -31,9 +38,23 @@ export default function SignupForm() {
     validate: zodResolver(schema),
   });
 
+  const handleSubmit = async (data: FormData) => {
+    const res = await pipeResult(createUser, data);
+    await res.match(
+      async r => {
+        const res = await pipeResult(login, data.email, data.password);
+        res.match(
+          r => router.replace(redirect),
+          e => router.push(`/user/login?${params}`)
+        );
+      },
+      e => notifications.show({ message: e, title: "Signup Error", color: "red" })
+    )
+  }
+
   return (
-    <form onSubmit={form.onSubmit(v => signup(v))}>
-      <Stack w={600}>
+    <form onSubmit={form.onSubmit(handleSubmit)}>
+      <Stack w={600} >
         <Title order={1} ta="center">Welcome to PeerPrep</Title>
         <TextInput label="Username" mt="xl" {...form.getInputProps("username")} />
         <TextInput label="Email" {...form.getInputProps("email")} />
@@ -43,9 +64,6 @@ export default function SignupForm() {
           <Button type="submit">Sign Up</Button>
         </Center>
       </Stack>
-      {signupError &&
-        <Alert color="red" title="Signup Error">{signupError}</Alert>
-      }
     </form>
   )
 

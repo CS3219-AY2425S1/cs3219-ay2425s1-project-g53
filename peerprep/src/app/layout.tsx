@@ -9,6 +9,8 @@ import { AppShell, ColorSchemeScript, MantineProvider } from "@mantine/core";
 import Header from "@/components/header";
 import Shell from "@/components/shell";
 import { currentUser } from "@/actions/user";
+import { Notifications } from "@mantine/notifications";
+import '@mantine/notifications/styles.css';
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -29,6 +31,7 @@ export default async function RootLayout({
       </head>
       <body>
         <MantineProvider defaultColorScheme="dark">
+          <Notifications />
           <Shell children={children} user={user ? user : undefined} />
         </MantineProvider>
       </body>

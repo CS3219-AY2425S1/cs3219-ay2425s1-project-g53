@@ -1,11 +1,14 @@
 "use client"
 
+import { currentUser, login, verifyCurrentUser } from "@/actions/user";
 import { redirectAction } from "@/actions/utils";
-import { useLogin } from "@/lib/hooks/user";
-import { Button, Center, PasswordInput, Stack, TextInput, Text, Alert, Anchor } from "@mantine/core";
+import { pipeResult } from "@/lib/utils";
+import { Button, Center, PasswordInput, Stack, TextInput, Text, Anchor } from "@mantine/core";
 import { useForm } from "@mantine/form";
+import { notifications } from "@mantine/notifications";
 import Link from "next/link";
-import React from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 
 interface FormData {
   email: string,
@@ -13,7 +16,11 @@ interface FormData {
 }
 
 export default function LoginForm() {
-  const { login, loginError } = useLogin("/");
+
+  const params = useSearchParams();
+  const redirect = params.get("redirect") ?? "/";
+  const router = useRouter();
+
   const form = useForm<FormData>({
     mode: "uncontrolled",
     initialValues: {
@@ -27,22 +34,31 @@ export default function LoginForm() {
     }
   });
 
-  return (
-    <React.Fragment>
-      <form onSubmit={form.onSubmit(v => login(v.email, v.password))}>
-        <Stack w={600}>
-          <TextInput label="Email" mt="xl" {...form.getInputProps("email")} />
-          <PasswordInput label="Password" {...form.getInputProps("password")} />
-          <Text size="sm">Don't have an account? <Anchor component={Link} href="/user/signup">Sign Up</Anchor> instead</Text>
-          <Center mt="lg">
-            <Button type="submit">Log In</Button>
-          </Center>
-        </Stack>
-      </form>
-      {loginError &&
-        <Alert title="Login Error" color="red">{loginError}</Alert>
+  async function handleSubmit(data: FormData) {
+    const res = await pipeResult(login, data.email, data.password);
+    res.match(
+      _ => router.replace(redirect),
+      err => {
+        notifications.show({
+          title: "Login Error",
+          message: err,
+          color: "red",
+        });
       }
-    </React.Fragment>
+    )
+  }
+
+  return (
+    <form onSubmit={form.onSubmit(handleSubmit)} >
+      <Stack w={600} >
+        <TextInput label="Email" mt="xl" {...form.getInputProps("email")} />
+        <PasswordInput label="Password" {...form.getInputProps("password")} />
+        <Text size="sm">Don't have an account? <Anchor component={Link} href={`/user/signup?${params}`}>Sign Up</Anchor> instead</Text>
+        <Center mt="lg">
+          <Button type="submit">Log In</Button>
+        </Center>
+      </Stack>
+    </form>
   )
 
 }

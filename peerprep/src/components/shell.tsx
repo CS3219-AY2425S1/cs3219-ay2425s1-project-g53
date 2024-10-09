@@ -6,6 +6,7 @@ import Header from "./header";
 import { useDisclosure } from "@mantine/hooks";
 import NavBar from "./navbar";
 import { UserWithToken } from "@/actions/user";
+import { Notifications } from "@mantine/notifications";
 
 export default function Shell({ children, user }: { children: Readonly<React.ReactNode>, user?: UserWithToken }) {
   const [opened, { toggle }] = useDisclosure();
@@ -19,8 +20,10 @@ export default function Shell({ children, user }: { children: Readonly<React.Rea
       }}
     >
       <Header opened={opened} user={user} onClick={toggle} />
-      <NavBar />
-      <AppShell.Main>{children}</AppShell.Main>
+      <NavBar user={user} />
+      <AppShell.Main>
+        {children}
+      </AppShell.Main>
     </AppShell>
   )
 }
