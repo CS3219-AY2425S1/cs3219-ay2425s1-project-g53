@@ -4,8 +4,8 @@ services:
     build:
       context: ./questions-service
       dockerfile: Dockerfile
-    ports:
-      - "8085:8080" # No need for this in production if docker compose is used, {SERVICE_NAME} will point to the correct ip
+    # ports:
+      # - "8085:8080" # No need for this in production if docker compose is used, {SERVICE_NAME} will point to the correct ip
     depends_on:
       postgres:
         condition: service_started
@@ -19,15 +19,15 @@ services:
     build:
       context: ./user-service
       dockerfile: Dockerfile
-    ports:
-      - "3001:3001" # For debugging, remember to delete in production
+    # ports:
+      # - "3001:3001" # For debugging, remember to delete in production
     
   nextjs:
     build:
       context: ./peerprep
       dockerfile: Dockerfile
     ports:
-      - "3000:3000"
+      - "3005:3000"
     environment:
       - QUESTION_API_URL=http://fastapi:8080
       - USER_API_URL=http://user-service:3001
@@ -40,8 +40,8 @@ services:
       POSTGRES_DB: pp-crud
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    ports:
-      - "5433:5432" # No need for this
+    # ports:
+      # - "5433:5432" # No need for this
 
 volumes:
   postgres_data:
