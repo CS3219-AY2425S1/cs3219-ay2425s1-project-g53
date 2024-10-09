@@ -1,11 +1,15 @@
 import { useEffect, useState } from "react";
 import { login, currentUser, UserWithToken, UserCreate, createUser } from '@/actions/user'
 import { pipeResult } from "../utils";
+import { redirectAction } from "@/actions/utils";
 
-export const useLogin = () => {
+export const useLogin = (redirect?: string) => {
   const [error, setError] = useState<string | null>(null);
   const loginHook = async (email: string, password: string) => {
-    await pipeResult(login, email, password).then(e => e.mapErr(
+    await pipeResult(login, email, password).then(e => e.match(
+      async _ => {
+        if (redirect) await redirectAction(redirect);
+      },
       msg => {
         setError(msg)
       }
@@ -14,18 +18,19 @@ export const useLogin = () => {
   return { login: loginHook, loginError: error }
 }
 
-export const userSignup = () => {
+export const useSignup = (redirect?: string) => {
   const [error, setError] = useState<string | null>(null);
   async function signup(data: UserCreate) {
     await pipeResult(createUser, data).then(r => r.match(
-      u => {
-        console.log(u)
+      async _ => {
+        if (redirect) await redirectAction(redirect);
       },
       e => {
         setError(e);
       }
     ))
   }
+  return { signup: signup, signupError: error }
 }
 
 export const useCurrentUser = () => {

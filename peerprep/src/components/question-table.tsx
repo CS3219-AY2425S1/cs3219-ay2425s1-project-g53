@@ -1,7 +1,7 @@
 "use client"
 
 import { Question } from "@/actions/questions"
-import { Table, Text } from "@mantine/core";
+import { Anchor, Table, Text } from "@mantine/core";
 import Link from "next/link";
 
 export default function QuestionTable(props: { questions: Question[] }) {
@@ -9,7 +9,7 @@ export default function QuestionTable(props: { questions: Question[] }) {
   const rows = props.questions.map(q => (
     <Table.Tr key={q.id}>
       <Table.Td>{q.id}</Table.Td>
-      <Table.Td><Link href={`/questions/${q.id}`} style={{ textDecoration: "none" }}>{q.title}</Link></Table.Td>
+      <Table.Td><Anchor component={Link} href={`/questions/${q.id}`}>{q.title}</Anchor></Table.Td>
       <Table.Td><Text lineClamp={1}>{q.description}</Text></Table.Td>
       <Table.Td>{q.categories.map(c => c.name).join(", ")}</Table.Td>
       <Table.Td>{q.complexity}</Table.Td>

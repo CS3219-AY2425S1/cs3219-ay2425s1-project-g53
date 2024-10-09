@@ -29,10 +29,7 @@ export const validateResponse = <S extends z.ZodTypeAny>(response: Response, sch
 
 export type SerializedResult<R, E> = { data: R | null, message: E | null }
 
-export const deserializeResult = <R, E>(x?: SerializedResult<R, E>): Result<R | null, E> => {
-  if (!x) {
-    return ok(null);
-  }
+export const deserializeResult = <R, E>(x: SerializedResult<R, E>): Result<R, E> => {
   if (x.data) {
     return ok(x.data);
   } else if (x.message) {

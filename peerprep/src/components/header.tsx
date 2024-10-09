@@ -13,7 +13,7 @@ export default function Header({ opened, onClick, user }: { opened?: boolean, on
           <Logo />
         </Group>
         <Group h="100%" px="md" justify="flex-end">
-          {user && <Text>{user.username}</Text>}
+          {user && <Text size="lg">{user.username}</Text>}
           <Box h="xl" w="xl">
             <IconUserCircle height="100%" width="100%" />
           </Box>

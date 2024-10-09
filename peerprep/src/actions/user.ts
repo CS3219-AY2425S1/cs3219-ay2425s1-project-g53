@@ -70,7 +70,6 @@ export const verifyCurrentUser = async () => {
 export const logout = async () => {
   cookies().delete(COOKIE_KEY);
   revalidatePath("/");
-  redirect("/");
 }
 
 export const login = async (email: string, password: string) => {
@@ -89,7 +88,6 @@ export const login = async (email: string, password: string) => {
           .map(u => {
             cookies().set(COOKIE_KEY, JSON.stringify(u));
             revalidatePath("/");
-            redirect("/");
             return u;
           });
       default:

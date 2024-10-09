@@ -1,7 +1,8 @@
 "use client"
 
+import { redirectAction } from "@/actions/utils";
 import { useLogin } from "@/lib/hooks/user";
-import { Button, Center, PasswordInput, Stack, TextInput, Text, Alert } from "@mantine/core";
+import { Button, Center, PasswordInput, Stack, TextInput, Text, Alert, Anchor } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import Link from "next/link";
 import React from "react";
@@ -12,7 +13,7 @@ interface FormData {
 }
 
 export default function LoginForm() {
-  const { login, loginError } = useLogin();
+  const { login, loginError } = useLogin("/");
   const form = useForm<FormData>({
     mode: "uncontrolled",
     initialValues: {
@@ -32,7 +33,7 @@ export default function LoginForm() {
         <Stack w={600}>
           <TextInput label="Email" mt="xl" {...form.getInputProps("email")} />
           <PasswordInput label="Password" {...form.getInputProps("password")} />
-          <Text size="sm">Don't have an account? <Link href="/user/signup">Sign Up</Link> instead</Text>
+          <Text size="sm">Don't have an account? <Anchor component={Link} href="/user/signup">Sign Up</Anchor> instead</Text>
           <Center mt="lg">
             <Button type="submit">Log In</Button>
           </Center>
