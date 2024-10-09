@@ -108,7 +108,7 @@ export const createUser = async (data: UserCreate): Promise<Result<User, string>
         return validateResponse(r, responseSchema)
           .andThen((o: ResponseType) => zodParseResult(o.data, userSchema));
       case 409:
-        return err("Duplicate Email/Password")
+        return err("Duplicate Email/Username")
       default:
         return err("API Error")
     }
