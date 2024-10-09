@@ -2,8 +2,10 @@
 
 import { cookies } from "next/headers";
 import { z } from "zod";
-import { fetchResult, validateResponse, zodParseResult } from "@/lib/utils";
+import { fetchResult, parseJsonResult, validateResponse, zodParseResult } from "@/lib/utils";
 import { err, Result } from "neverthrow";
+import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 
 const API_URL = process.env.USER_API_URL;
 const COOKIE_KEY = "currentUser";
@@ -16,13 +18,13 @@ const userCreateSchema = z.object({
 });
 
 const userUpdateSchema = userCreateSchema.extend({
-  id: z.string().uuid()
+  id: z.string()
 });
 
 const userSchema = userUpdateSchema.extend({
-  createdAt: z.date(),
+  createdAt: z.coerce.date(),
   isAdmin: z.boolean(),
-});
+}).omit({ password: true });
 
 const userWithTokenSchema = userSchema.extend({
   accessToken: z.string(),
@@ -45,7 +47,7 @@ export const currentUser = async () => {
   if (!temp) {
     return null;
   }
-  const user = zodParseResult(temp, userWithTokenSchema);
+  const user = parseJsonResult(temp).andThen(x => zodParseResult(x, userWithTokenSchema));
   return user.unwrapOr(null);
 }
 
@@ -67,6 +69,8 @@ export const verifyCurrentUser = async () => {
 
 export const logout = async () => {
   cookies().delete(COOKIE_KEY);
+  revalidatePath("/");
+  redirect("/");
 }
 
 export const login = async (email: string, password: string) => {
@@ -81,7 +85,13 @@ export const login = async (email: string, password: string) => {
         return err("Incorrect Email/Password");
       case 200:
         return validateResponse(r, responseSchema)
-          .andThen(r => zodParseResult(r.data, userWithTokenSchema));
+          .andThen(r => zodParseResult(r.data, userWithTokenSchema))
+          .map(u => {
+            cookies().set(COOKIE_KEY, JSON.stringify(u));
+            revalidatePath("/");
+            redirect("/");
+            return u;
+          });
       default:
         return err("Login Error")
     }

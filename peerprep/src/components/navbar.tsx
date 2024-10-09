@@ -11,7 +11,7 @@ export default function NavBar() {
     { name: "Home", link: "/", icon: (<IconHome />) },
     { name: "Match Now", link: "/match", icon: (<IconSearch />) },
     { name: "Questions", link: "/questions", icon: (<IconList />) },
-    { name: "Settings", link: "/settings", icon: (<IconSettings />) },
+    { name: "Settings", link: "/user/settings", icon: (<IconSettings />) },
   ].map(e => (
     <NavLink key={e.link} component={Link} href={e.link} label={e.name} active={currentPath === e.link} leftSection={e.icon} />
   ));

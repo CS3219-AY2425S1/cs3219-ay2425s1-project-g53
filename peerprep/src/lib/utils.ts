@@ -1,4 +1,5 @@
-import { Result, ResultAsync } from "neverthrow"
+import { serializeResult } from "@/actions/utils";
+import { err, fromPromise, ok, Result, ResultAsync } from "neverthrow"
 import { z } from "zod"
 
 export const fetchResult = (url: RequestInfo | URL, init?: RequestInit) => {
@@ -11,8 +12,7 @@ export const fetchResult = (url: RequestInfo | URL, init?: RequestInit) => {
 export const zodParseResult = <T extends any, S extends z.ZodTypeAny>(data: T, schema: S): Result<z.infer<typeof schema>, string> => {
   return Result.fromThrowable(schema.parse, (e) =>
     `Failed to validate type 
-  EXPECTED: ${typeof schema}
-  RECEIVED: ${typeof data}
+  RECEIVED: ${JSON.stringify(data)}
   ${e}`)
     (data);
 }
@@ -26,3 +26,23 @@ export const validateResponse = <S extends z.ZodTypeAny>(response: Response, sch
     `Response is not json
   ${e}`).andThen(o => zodParseResult(o, schema))
 }
+
+export type SerializedResult<R, E> = { data: R | null, message: E | null }
+
+export const deserializeResult = <R, E>(x?: SerializedResult<R, E>): Result<R | null, E> => {
+  if (!x) {
+    return ok(null);
+  }
+  if (x.data) {
+    return ok(x.data);
+  } else if (x.message) {
+    return err(x.message);
+  } else {
+    throw new Error(`Error occured while deserializing object to Result: ${x}`)
+  }
+}
+
+export const pipeResult = async <R, E>(action: ((...args: any[]) => Promise<Result<R, E>>), ...args: any[]) => {
+  return deserializeResult(await serializeResult(action, ...args));
+}
+

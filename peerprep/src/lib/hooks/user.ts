@@ -1,19 +1,31 @@
 import { useEffect, useState } from "react";
-import { login, currentUser, UserWithToken } from '@/actions/user'
+import { login, currentUser, UserWithToken, UserCreate, createUser } from '@/actions/user'
+import { pipeResult } from "../utils";
 
 export const useLogin = () => {
   const [error, setError] = useState<string | null>(null);
   const loginHook = async (email: string, password: string) => {
-    (await login(email, password)).match(
-      user => {
-        console.log(user + " logged in")
-      },
+    await pipeResult(login, email, password).then(e => e.mapErr(
       msg => {
         setError(msg)
       }
-    )
+    ))
   }
   return { login: loginHook, loginError: error }
+}
+
+export const userSignup = () => {
+  const [error, setError] = useState<string | null>(null);
+  async function signup(data: UserCreate) {
+    await pipeResult(createUser, data).then(r => r.match(
+      u => {
+        console.log(u)
+      },
+      e => {
+        setError(e);
+      }
+    ))
+  }
 }
 
 export const useCurrentUser = () => {

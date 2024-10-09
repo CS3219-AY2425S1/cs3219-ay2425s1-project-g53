@@ -5,8 +5,9 @@ import React from "react";
 import Header from "./header";
 import { useDisclosure } from "@mantine/hooks";
 import NavBar from "./navbar";
+import { UserWithToken } from "@/actions/user";
 
-export default function Shell({ children }: { children: Readonly<React.ReactNode> }) {
+export default function Shell({ children, user }: { children: Readonly<React.ReactNode>, user?: UserWithToken }) {
   const [opened, { toggle }] = useDisclosure();
   return (
     <AppShell
@@ -17,7 +18,7 @@ export default function Shell({ children }: { children: Readonly<React.ReactNode
         collapsed: { desktop: !opened }
       }}
     >
-      <Header opened={opened} onClick={toggle} />
+      <Header opened={opened} user={user} onClick={toggle} />
       <NavBar />
       <AppShell.Main>{children}</AppShell.Main>
     </AppShell>
