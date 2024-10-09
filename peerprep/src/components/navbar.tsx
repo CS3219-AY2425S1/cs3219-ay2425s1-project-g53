@@ -4,8 +4,9 @@ import { AppShell, NavLink } from "@mantine/core";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { IconHome, IconList, IconSearch, IconSettings } from "@tabler/icons-react";
+import { UserWithToken } from "@/actions/user";
 
-export default function NavBar() {
+export default function NavBar({ user }: { user?: UserWithToken }) {
   const currentPath = usePathname();
   const links = [
     { name: "Home", link: "/", icon: (<IconHome />) },
@@ -18,7 +19,7 @@ export default function NavBar() {
 
   return (
     <AppShell.Navbar>
-      {links}
+      {user ? links : links.filter(x => x.key !== "/user/settings")}
     </AppShell.Navbar>
   )
 }
