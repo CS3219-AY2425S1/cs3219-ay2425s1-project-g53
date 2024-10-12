@@ -1,10 +1,14 @@
 "use client"
 
-import { logout, UserWithToken } from "@/actions/user";
+import { logout } from "@/actions/user";
+import { UserContext } from "@/lib/contexts";
 import { Button, Center, Stack, Title } from "@mantine/core";
 import Link from "next/link";
+import { use } from "react";
 
-export default function Home({ user }: { user?: UserWithToken }) {
+export default function Home() {
+  const user = use(UserContext);
+
   return (
     <Center h="80vh" w="100%">
       <Stack justify="center">
@@ -17,10 +21,10 @@ export default function Home({ user }: { user?: UserWithToken }) {
             Log Out
           </Button> :
           <>
-            <Link href="/user/login">
+            <Link href="/auth/login">
               <Button w="100%">Log In</Button>
             </Link>
-            <Link href="/user/signup">
+            <Link href="/auth/signup">
               <Button w="100%">Sign Up</Button>
             </Link>
           </>

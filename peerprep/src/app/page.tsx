@@ -6,7 +6,5 @@ import Image from "next/image";
 import Link from "next/link";
 
 export default async function Page() {
-  const user = await currentUser();
-
-  return user ? <Home user={user} /> : <Home />
+  return <Home />
 }

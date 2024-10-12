@@ -30,10 +30,10 @@ export default async function RootLayout({
         <ColorSchemeScript defaultColorScheme="dark" />
       </head>
       <body>
-        <MantineProvider defaultColorScheme="dark">
-          <Notifications />
-          <Shell children={children} user={user ? user : undefined} />
-        </MantineProvider>
+          <MantineProvider defaultColorScheme="dark">
+            <Notifications />
+            <Shell children={children} user={user} />
+          </MantineProvider>
       </body>
     </html>
   );

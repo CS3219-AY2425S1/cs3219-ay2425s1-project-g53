@@ -16,7 +16,6 @@ interface FormData {
 }
 
 export default function LoginForm() {
-
   const params = useSearchParams();
   const redirect = params.get("redirect") ?? "/";
   const router = useRouter();
@@ -53,7 +52,7 @@ export default function LoginForm() {
       <Stack w={600} >
         <TextInput label="Email" mt="xl" {...form.getInputProps("email")} />
         <PasswordInput label="Password" {...form.getInputProps("password")} />
-        <Text size="sm">Don't have an account? <Anchor component={Link} href={`/user/signup?${params}`}>Sign Up</Anchor> instead</Text>
+        <Text size="sm">Don't have an account? <Anchor component={Link} href={`/auth/signup?${params}`}>Sign Up</Anchor> instead</Text>
         <Center mt="lg">
           <Button type="submit">Log In</Button>
         </Center>

@@ -5,12 +5,16 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { IconHome, IconList, IconSearch, IconSettings } from "@tabler/icons-react";
 import { UserWithToken } from "@/actions/user";
+import { use } from "react";
+import { UserContext } from "@/lib/contexts";
 
-export default function NavBar({ user }: { user?: UserWithToken }) {
+export default function NavBar() {
+  const user = use(UserContext);
+
   const currentPath = usePathname();
   const links = [
     { name: "Home", link: "/", icon: (<IconHome />) },
-    { name: "Match Now", link: "/match", icon: (<IconSearch />) },
+    { name: "Match Now", link: "/user/match", icon: (<IconSearch />) },
     { name: "Questions", link: "/questions", icon: (<IconList />) },
     { name: "Settings", link: "/user/settings", icon: (<IconSettings />) },
   ].map(e => (

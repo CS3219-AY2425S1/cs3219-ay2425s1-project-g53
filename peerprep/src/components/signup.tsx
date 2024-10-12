@@ -45,7 +45,7 @@ export default function SignupForm() {
         const res = await pipeResult(login, data.email, data.password);
         res.match(
           r => router.replace(redirect),
-          e => router.push(`/user/login?${params}`)
+          e => router.push(`/auth/login?${params}`)
         );
       },
       e => notifications.show({ message: e, title: "Signup Error", color: "red" })

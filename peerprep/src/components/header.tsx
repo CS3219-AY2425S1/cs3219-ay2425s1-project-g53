@@ -1,10 +1,15 @@
+"use client"
+
 import { Text, AppShellHeader, Box, Burger, Group } from "@mantine/core";
-import { MouseEventHandler } from "react";
+import { MouseEventHandler, use } from "react";
 import Logo from "./logo";
 import { IconLogin, IconUser, IconUserCircle } from "@tabler/icons-react";
 import { UserWithToken } from "@/actions/user";
+import { UserContext } from "@/lib/contexts";
 
-export default function Header({ opened, onClick, user }: { opened?: boolean, onClick?: MouseEventHandler<HTMLButtonElement>, user?: UserWithToken }) {
+export default function Header({ opened, onClick }: { opened?: boolean, onClick?: MouseEventHandler<HTMLButtonElement> }) {
+  const user = use(UserContext);
+
   return (
     <AppShellHeader>
       <Group h="100%" justify="space-between">
