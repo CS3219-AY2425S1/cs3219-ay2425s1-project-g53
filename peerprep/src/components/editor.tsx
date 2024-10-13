@@ -3,19 +3,21 @@
 import { Editor, Monaco, } from "@monaco-editor/react"
 import monaco from "monaco-editor";
 import * as Y from 'yjs'
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { MonacoBinding } from "y-monaco";
-import { WebsocketProvider } from "y-websocket";
-
+import { HocuspocusProvider } from "@hocuspocus/provider";
+import { Select, Stack } from "@mantine/core";
 
 export default function CodeEditor() {
   const ydoc = useMemo(() => new Y.Doc(), []);
   const [editor, setEditor] = useState<any | null>(null);
-  const [provider, setProvider] = useState<WebsocketProvider | null>(null);
+  const [provider, setProvider] = useState<HocuspocusProvider | null>(null);
   const [binding, setBinding] = useState<MonacoBinding | null>(null);
+  const yMap = useRef<Y.Map<string> | null>(null);
+  const [language, setLanguage] = useState<string>("typescript");
 
   useEffect(() => {
-    const provider = new WebsocketProvider("wss://demos.yjs.dev/ws", 'monaco-demo-ginloy', ydoc);
+    const provider = new HocuspocusProvider({ url: "ws://192.168.0.118:5005", name: 'monaco-demo-ginloy', document: ydoc });
     setProvider(provider);
 
     return () => {
@@ -28,10 +30,28 @@ export default function CodeEditor() {
     if (!provider || !editor) {
       return;
     }
-    const binding = new MonacoBinding(ydoc.getText(), editor.getModel(), new Set([editor]), provider.awareness);
+    const binding = new MonacoBinding(ydoc.getText("monaco"), editor.getModel(), new Set([editor]), provider.awareness);
     setBinding(binding);
+
+    const map = ydoc.getMap<string>("language-selector");
+    map.set("language", language);
+    map.observe(e => {
+      const temp = map.get("language");
+      if (temp) setLanguage(temp);
+    })
+
+    yMap.current = map;
+
     return () => binding.destroy();
   }, [ydoc, provider, editor]);
+
+  const languageSelector = (
+    <Select label="Select Language" data={["javascript", "typescript", "csharp", "java", "cpp", "rust", "python"]} value={language} onChange={v => {
+      if (v && yMap.current) {
+        yMap.current.set("language", v);
+      }
+    }} />
+  )
 
   return (
     <>
@@ -59,9 +79,17 @@ export default function CodeEditor() {
                }
           `}
       </style>
-      <Editor height="100%" defaultLanguage="typescript" theme="vs-dark" onMount={(editor: monaco.editor.IStandaloneCodeEditor, monaco: Monaco) => {
-        setEditor(editor);
-      }}
-      />
+      <Stack h="calc(100vh - 60px)">
+        {languageSelector}
+        <Editor width="100%" language={language} theme="vs-dark" onMount={(editor, monaco) => {
+          setEditor(editor);
+        }}
+          beforeMount={(monaco) => {
+            monaco.languages.typescript.typescriptDefaults.setDiagnosticsOptions({
+              noSemanticValidation: true,
+            });
+          }}
+        />
+      </Stack>
     </>)
 }
