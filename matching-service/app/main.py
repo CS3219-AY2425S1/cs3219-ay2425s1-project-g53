@@ -21,6 +21,10 @@ async def check_waiting():
 async def check_sockets():
     return { "message": list(connected_users.keys()) }
 
+# Frontend calls this API endpoint to establish a websocket connection with the matching-service.
+# This websocket connection is used by matching-service to inform the frontend of a successful match or timeout.
+# Websocket connection must be established each time a find match post request is sent.
+# A timeout or successful match will terminate the websocket connection.
 @app.websocket("/ws/{user_id}")
 async def websocket_connect(websocket: WebSocket, user_id: int):
     await websocket.accept()
