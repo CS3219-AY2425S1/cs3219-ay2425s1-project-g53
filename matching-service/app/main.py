@@ -2,8 +2,8 @@ import asyncio
 from collections import deque
 from datetime import datetime
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
-from pydantic import BaseModel
 from typing import Dict
+from . import models
 
 MATCH_TIMEOUT = 5
 
@@ -12,16 +12,6 @@ app = FastAPI()
 match_finder: Dict[int, deque] = {}
 connected_users: Dict[int, WebSocket] = {}
 timeout_tracker: Dict[int, asyncio.Task] = {}
-
-class UserRequest(BaseModel):
-    user_id: int
-    question_id: int
-
-class Match(BaseModel):
-    user_1: int
-    user_2: int
-    question_id: int
-    match_time: datetime
 
 @app.get("/check_waiting/")
 async def check_waiting():
@@ -42,7 +32,7 @@ async def websocket_connect(websocket: WebSocket, user_id: int):
         del connected_users[user_id]
 
 @app.post("/find_match/")
-async def find_match(request: UserRequest):
+async def find_match(request: models.UserRequest):
     user_id = request.user_id
     question_id = request.question_id
 
