@@ -5,7 +5,7 @@ from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from typing import Dict
 from . import models
 
-MATCH_TIMEOUT = 5
+MATCH_TIMEOUT = 15
 
 app = FastAPI()
 
