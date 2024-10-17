@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import useSWR from 'swr'
-import Question from '../lib/question'; 
+import { Question } from '@/actions/questions';
 
 interface EditQuestionFormProps {
   question: Question;
@@ -50,13 +50,13 @@ const EditQuestionForm: React.FC<EditQuestionFormProps> = ({ question, onUpdate,
   return (
     <form onSubmit={handleSubmit} className="row g-3 mt-3">
       <div className="col-4">
-        <input 
-          type="text" 
-          name="title" 
-          value={updatedQuestion.title} 
-          onChange={handleChange} 
-          placeholder="Title" 
-          required 
+        <input
+          type="text"
+          name="title"
+          value={updatedQuestion.title}
+          onChange={handleChange}
+          placeholder="Title"
+          required
           className="form-control"
         />
       </div>
@@ -74,14 +74,14 @@ const EditQuestionForm: React.FC<EditQuestionFormProps> = ({ question, onUpdate,
         <button type="button" className="btn btn-secondary me-2" onClick={onCancel}>Cancel</button>
       </div>
       <div className="col-12">
-        <textarea 
-          name="description" 
-          value={updatedQuestion.description} 
-          onChange={handleChange} 
-          placeholder="Description" 
-          required 
-          className="form-control" 
-          rows={6} 
+        <textarea
+          name="description"
+          value={updatedQuestion.description}
+          onChange={handleChange}
+          placeholder="Description"
+          required
+          className="form-control"
+          rows={6}
         />
       </div>
     </form>

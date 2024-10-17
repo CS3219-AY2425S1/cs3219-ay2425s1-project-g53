@@ -1,2 +1,5 @@
 .README.md
 .gitignore
+.env
+.next
+node_modules
