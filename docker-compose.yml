@@ -32,6 +32,13 @@ services:
       - QUESTION_API_URL=http://fastapi:8080
       - USER_API_URL=http://user-service:3001
 
+  matching-service:
+    build:
+      context: ./matching-service
+      dockerfile: Dockerfile
+    ports:
+      - "8086:8080"
+
   postgres:
     image: postgres:14
     environment:
