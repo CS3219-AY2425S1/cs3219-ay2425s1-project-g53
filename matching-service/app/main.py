@@ -18,6 +18,10 @@ lock = asyncio.Lock()
     status_code=200,
     responses={
         200: {"model": models.Match},
+        400: {
+            "model": models.HTTPError,
+            "description": "User already in the matching process",
+        },
         404: {"model": models.HTTPError, "description": "Raised if match timeout"},
         500: {"model": models.HTTPError, "description": "Internal Server Error"},
     },
