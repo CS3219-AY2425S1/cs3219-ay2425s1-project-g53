@@ -2,19 +2,11 @@ from pydantic import BaseModel
 from datetime import datetime
 
 class UserRequest(BaseModel):
-    user_id: str
+    user_id: int
     question_id: int
 
 class Match(BaseModel):
-    user_1: str
-    user_2: str
+    user_1: int
+    user_2: int
     question_id: int
     match_time: datetime
-
-class HTTPError(BaseModel):
-    detail: str
-
-    class Config:
-        schema_extra = {
-            "example": {"detail": "HTTPException raised."},
-        }

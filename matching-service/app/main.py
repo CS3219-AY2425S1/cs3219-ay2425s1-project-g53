@@ -1,72 +1,97 @@
 import asyncio
+from collections import deque
 from datetime import datetime
-from fastapi import FastAPI, HTTPException
-from typing import Dict, Set
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from typing import Dict
 from . import models
 
-MATCH_TIMEOUT = 60
+MATCH_TIMEOUT = 15
 
 app = FastAPI()
 
-matcher: Dict[int, tuple[asyncio.Barrier, list[models.UserRequest]]] = {}
-matching: Set[str] = set()
-lock = asyncio.Lock()
+match_finder: Dict[int, deque] = {}
+connected_users: Dict[int, WebSocket] = {}
+timeout_tracker: Dict[int, asyncio.Task] = {}
 
+@app.get("/check_waiting/")
+async def check_waiting():
+    return { "message": match_finder }
 
-@app.post(
-    "/find_match/",
-    status_code=200,
-    responses={
-        200: {"model": models.Match},
-        404: {"model": models.HTTPError, "description": "Raised if match timeout"},
-        500: {"model": models.HTTPError, "description": "Internal Server Error"},
-    },
-)
-async def find_match(request: models.UserRequest) -> models.Match:
-    question_id = request.question_id
+@app.get("/check_sockets/")
+async def check_sockets():
+    return { "message": list(connected_users.keys()) }
+
+# Frontend calls this API endpoint to establish a websocket connection with the matching-service.
+# This websocket connection is used by matching-service to inform the frontend of a successful match or timeout.
+# Websocket connection must be established each time a find match post request is sent.
+# A timeout or successful match will terminate the websocket connection.
+@app.websocket("/ws/{user_id}")
+async def websocket_connect(websocket: WebSocket, user_id: int):
+    await websocket.accept()
+    connected_users[user_id] = websocket
+    try:
+        while True:
+            await websocket.receive_text()
+    except WebSocketDisconnect:
+        del connected_users[user_id]
+
+@app.post("/find_match/")
+async def find_match(request: models.UserRequest):
     user_id = request.user_id
-    if user_id in matching:
-        raise HTTPException(status_code=400, detail="User already matching")
+    question_id = request.question_id
 
-    matching.add(user_id)
+    if question_id not in match_finder:
+        match_finder[question_id] = deque()
 
-    # try:
-    if question_id not in matcher:
-        async with lock:
-            barrier = asyncio.Barrier(2)
-            matcher[question_id] = (barrier, [request])
+    # Check whether the user is already in queue
+    if match_finder[question_id]:
+        if match_finder[question_id][0] == user_id:
+            return { "message" : "User already in search queue, please be patient!" }
 
-        try:
-            await asyncio.wait_for(barrier.wait(), MATCH_TIMEOUT)
-            async with lock:
-                users: list[models.UserRequest] = matcher[question_id][1]
-                del matcher[question_id]
-                return models.Match(
-                    user_1=users[0].user_id,
-                    user_2=users[1].user_id,
-                    question_id=question_id,
-                    match_time=datetime.now(),
-                )
+        collab_user = match_finder[question_id].pop()
+        new_match = {
+            "user_1": user_id,
+            "user_2": collab_user,
+            "question_id": question_id,
+            "match_time": datetime.now()
+        }
 
-        except TimeoutError:
-            async with lock:
-                del matcher[question_id]
-            raise HTTPException(status_code=404, detail="Match Timeout")
+        notify_match_found(user_id)
+        notify_match_found(collab_user)
+        cancel_timeout(collab_user)
 
-    else:
-        async with lock:
-            (barrier, users) = matcher[question_id]
-            users.append(request)
+        return { "message": "Match found!", "match:": new_match }
+    
+    match_finder[question_id].append(user_id)
+    timeout_task = asyncio.create_task(match_timeout(user_id, question_id))
+    timeout_tracker[user_id] = timeout_task
 
-        await barrier.wait()
+    return { "message": "Waiting for match..." }
 
-        async with lock:
-            return models.Match(
-                user_1=users[0].user_id,
-                user_2=users[1].user_id,
-                question_id=question_id,
-                match_time=datetime.now(),
-            )
+async def notify_match_found(user_id: int):
+    if user_id in connected_users:
+            await connected_users[user_id].send_text("Match found! Please wait while you are connected...")
 
-    # finally:
-    # raise HTTPException(status_code=500, detail="Unknown error")
+async def notify_match_timeout(user_id: int):
+    if user_id in connected_users:
+            await connected_users[user_id].send_text("Timed out while waiting for match. Please try again.")
+
+async def match_timeout(user_id: int, question_id: int):
+    try:
+        await asyncio.sleep(MATCH_TIMEOUT)
+        if user_id in match_finder[question_id]:
+            match_finder[question_id].remove(user_id)
+            await notify_match_timeout(user_id)
+            await terminate_websocket(user_id)
+    except asyncio.CancelledError:
+        pass
+
+async def cancel_timeout(user_id: int):
+    if user_id in timeout_tracker:
+        timeout_tracker[user_id].cancel()
+        del timeout_tracker[user_id]
+
+async def terminate_websocket(user_id: int):
+    if user_id in connected_users:
+        connected_users[user_id].close()
+        del connected_users[user_id]
