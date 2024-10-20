@@ -10,45 +10,18 @@ import { Select, Stack } from "@mantine/core";
 
 export default function CodeEditor() {
   const ydoc = useMemo(() => new Y.Doc(), []);
-  const [editor, setEditor] = useState<any | null>(null);
-  const [provider, setProvider] = useState<HocuspocusProvider | null>(null);
-  const [binding, setBinding] = useState<MonacoBinding | null>(null);
+  const provider = useMemo(() => new HocuspocusProvider({ url: "ws://192.168.0.118:5005", name: "monaco-demo-ginloy", document: ydoc }), [ydoc]);
+  const editor = useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
+  const binding = useRef<MonacoBinding | null>(null);
   const yMap = useRef<Y.Map<string> | null>(null);
   const [language, setLanguage] = useState<string>("typescript");
 
-  useEffect(() => {
-    const provider = new HocuspocusProvider({ url: "ws://192.168.0.118:5005", name: 'monaco-demo-ginloy', document: ydoc });
-    setProvider(provider);
-
-    return () => {
-      provider?.destroy();
-      ydoc.destroy();
-    }
-  }, [ydoc]);
-
-  useEffect(() => {
-    if (!provider || !editor) {
-      return;
-    }
-    const binding = new MonacoBinding(ydoc.getText("monaco"), editor.getModel(), new Set([editor]), provider.awareness);
-    setBinding(binding);
-
-    const map = ydoc.getMap<string>("language-selector");
-    map.set("language", language);
-    map.observe(e => {
-      const temp = map.get("language");
-      if (temp) setLanguage(temp);
-    })
-
-    yMap.current = map;
-
-    return () => binding.destroy();
-  }, [ydoc, provider, editor]);
-
   const languageSelector = (
-    <Select label="Select Language" data={["javascript", "typescript", "csharp", "java", "cpp", "rust", "python"]} value={language} onChange={v => {
+    <Select size="xs" label="Select Language" data={["javascript", "typescript", "csharp", "java", "cpp", "rust", "python"]} value={language} onChange={v => {
       if (v && yMap.current) {
         yMap.current.set("language", v);
+      } else if (v) {
+        setLanguage(v);
       }
     }} />
   )
@@ -81,8 +54,22 @@ export default function CodeEditor() {
       </style>
       <Stack h="calc(100vh - 60px)">
         {languageSelector}
-        <Editor width="100%" language={language} theme="vs-dark" onMount={(editor, monaco) => {
-          setEditor(editor);
+        <Editor width="100%" language={language} theme="vs-dark" onMount={(e, m) => {
+          editor.current = e;
+          const model = e.getModel();
+          if (!model) {
+            return;
+          }
+          binding.current = new MonacoBinding(ydoc.getText("monaco"), model, new Set([e]), provider.awareness);
+
+          const map = ydoc.getMap<string>("language-selector");
+          map.set("language", language);
+          map.observe(e => {
+            const temp = map.get("language");
+            if (temp) setLanguage(temp);
+          })
+
+          yMap.current = map;
         }}
           beforeMount={(monaco) => {
             monaco.languages.typescript.typescriptDefaults.setDiagnosticsOptions({

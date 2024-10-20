@@ -1,7 +1,7 @@
-import CodeEditor from "@/components/editor";
 import { Container } from "@mantine/core";
+import dynamic from "next/dynamic";
 
-
+const CodeEditor = dynamic(() => import('@/components/editor'), { ssr: false });
 
 export default function Page() {
   return (
