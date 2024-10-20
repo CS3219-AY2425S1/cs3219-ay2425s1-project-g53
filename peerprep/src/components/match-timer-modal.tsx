@@ -30,8 +30,10 @@ const MatchTimerModal = ({ opened, onClose, onCancel }: {opened:boolean, onClose
   return (
     <Modal opened={opened} onClose={onClose} title="Finding Match">
       <Center>
-        <Loader />
+        <Loader mr="md" />
         <Text>Searching for a match... {seconds}s</Text>
+      </Center>
+      <Center>
         <Button onClick={onCancel} mt="md">Cancel</Button>
       </Center>
     </Modal>
