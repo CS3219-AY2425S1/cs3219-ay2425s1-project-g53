@@ -10,9 +10,9 @@ MATCH_TIMEOUT = 15
 
 app = FastAPI()
 
-match_finder: Dict[int, deque] = {}
-connected_users: Dict[int, WebSocket] = {}
-timeout_tracker: Dict[int, asyncio.Task] = {}
+match_finder: Dict[str, deque] = {}
+connected_users: Dict[str, WebSocket] = {}
+timeout_tracker: Dict[str, asyncio.Task] = {}
 
 origins = [
     "*",
@@ -39,7 +39,7 @@ async def check_sockets():
 # Websocket connection must be established each time a find match post request is sent.
 # A timeout or successful match will terminate the websocket connection.
 @app.websocket("/ws/{user_id}")
-async def websocket_connect(websocket: WebSocket, user_id: int):
+async def websocket_connect(websocket: WebSocket, user_id: str):
     await websocket.accept()
     connected_users[user_id] = websocket
     try:
