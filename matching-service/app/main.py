@@ -62,18 +62,14 @@ async def find_match(request: models.UserRequest):
             return { "message" : "User already in search queue, please be patient!" }
 
         collab_user = match_finder[question_id].pop()
-        new_match = {
-            "user_1": user_id,
-            "user_2": collab_user,
-            "question_id": question_id,
-            "match_time": datetime.now()
-        }
+        user_id_new_match = models.Match(user_1=user_id,user_2=collab_user,question_id=question_id,match_time=datetime.now())
+        collab_user_new_match = models.Match(user_1=collab_user,user_2=user_id,question_id=question_id,match_time=datetime.now())
 
-        notify_match_found(user_id)
-        notify_match_found(collab_user)
-        cancel_timeout(collab_user)
+        await notify_match_found(user_id, user_id_new_match)
+        await notify_match_found(collab_user, collab_user_new_match)
+        await cancel_timeout(collab_user)
 
-        return { "message": "Match found!", "match:": new_match }
+        return
     
     match_finder[question_id].append(user_id)
     timeout_task = asyncio.create_task(match_timeout(user_id, question_id))
@@ -81,9 +77,9 @@ async def find_match(request: models.UserRequest):
 
     return { "message": "Waiting for match..." }
 
-async def notify_match_found(user_id: str):
+async def notify_match_found(user_id: str, match: models.Match):
     if user_id in connected_users:
-            await connected_users[user_id].send_text("Match found! Please wait while you are connected...")
+        await connected_users[user_id].send_text(match.model_dump_json())
 
 async def notify_match_timeout(user_id: str):
     if user_id in connected_users:
@@ -106,5 +102,4 @@ async def cancel_timeout(user_id: str):
 
 async def terminate_websocket(user_id: str):
     if user_id in connected_users:
-        connected_users[user_id].close()
-        del connected_users[user_id]
+        await connected_users[user_id].close()

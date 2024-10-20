@@ -45,6 +45,21 @@ export default function FindMatch({ questionId, user }: {questionId: number, use
   const handleFindMatch = async () => {
     const user_id = user.id;  // Replace with actual user ID
     const question_id = questionId;  // Replace with actual question ID
+    const socketUrl = `ws://localhost:8086/ws/${user_id}`;
+    const ws = new WebSocket(socketUrl);
+
+    // Store the WebSocket instance in state
+    socket.current = ws;
+
+    // Handle messages from the server
+    ws.onmessage = (event) => {
+      console.log('Received message:', event.data);
+      setMessage(event.data);
+    };
+
+    ws.onclose = () => {
+      console.log('WebSocket connection closed');
+    };
 
     setLoading(true);
     setIsMatching(true);
@@ -63,6 +78,7 @@ export default function FindMatch({ questionId, user }: {questionId: number, use
 
       console.log('Match response:', response.data);
       clearTimeout(timer); // Clear timeout if a match is found before 30 seconds
+      // ws.close();
       setIsMatching(false); // Stop matching
     } catch (error) {
       console.error('Error finding match:', error);
