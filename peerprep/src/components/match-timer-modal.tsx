@@ -2,27 +2,30 @@ import React, { useEffect, useState } from 'react';
 import { Modal, Loader, Button, Text } from '@mantine/core';
 
 const MatchTimerModal = ({ opened, onClose, onCancel }) => {
-  const [seconds, setSeconds] = useState(0);
+  const [seconds, setSeconds] = useState(30);
   const [isTimeout, setIsTimeout] = useState(false);
 
   useEffect(() => {
     let timer = null;
 
     if (opened) {
-      setSeconds(0);
+      setSeconds(30); 
       setIsTimeout(false);
 
       timer = setInterval(() => {
-        setSeconds(prev => prev + 1);
-        if (seconds >= 30) {
-          clearInterval(timer);
-          setIsTimeout(true);
-        }
+        setSeconds(prev => {
+          if (prev <= 1) { 
+            clearInterval(timer);
+            setIsTimeout(true);
+            return 0; 
+          }
+          return prev - 1; 
+        });
       }, 1000);
     }
 
     return () => clearInterval(timer);
-  }, [opened, seconds]);
+  }, [opened]);
 
   return (
     <Modal opened={opened} onClose={onClose} title="Finding Match">

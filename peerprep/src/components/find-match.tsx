@@ -2,7 +2,7 @@
 
 import { use, useContext, useEffect, useRef, useState } from 'react';
 import axios from "axios";
-import { Button } from '@mantine/core';
+import { Button, Notification } from '@mantine/core';
 import MatchTimerModal from '@/components/match-timer-modal';
 import { UserContext } from '@/lib/contexts';
 import { useRouter } from 'next/navigation';
