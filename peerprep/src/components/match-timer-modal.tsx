@@ -1,5 +1,3 @@
-"use client"; // This is a client component
-
 import React, { useEffect, useState } from 'react';
 import { Modal, Loader, Button, Text } from '@mantine/core';
 
@@ -13,7 +11,7 @@ const MatchTimerModal = ({ opened, onClose, onCancel }) => {
     if (opened) {
       setSeconds(0);
       setIsTimeout(false);
-      
+
       timer = setInterval(() => {
         setSeconds(prev => prev + 1);
         if (seconds >= 30) {
