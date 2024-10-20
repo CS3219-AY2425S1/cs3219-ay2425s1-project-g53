@@ -84,10 +84,9 @@ export default function FindMatch({ questionId, user }: {questionId: number, use
 
       <MatchTimerModal 
         opened={isMatching} 
-        onClose={handleCancel} 
-        timeout={isTimeout} 
+        onClose={() => setIsMatching(false)} 
         onCancel={handleCancel} 
-        />
+      />
     </div>
   );
 }
