@@ -62,6 +62,7 @@ async def find_match(request: models.UserRequest):
             return { "message" : "User already in search queue, please be patient!" }
 
         collab_user = match_finder[question_id].pop()
+        print(match_finder)
         user_id_new_match = models.Match(user_1=user_id,user_2=collab_user,question_id=question_id,match_time=datetime.now())
         collab_user_new_match = models.Match(user_1=collab_user,user_2=user_id,question_id=question_id,match_time=datetime.now())
 
@@ -71,7 +72,10 @@ async def find_match(request: models.UserRequest):
 
         return
     
+    print(match_finder)
     match_finder[question_id].append(user_id)
+    print(match_finder)
+
     timeout_task = asyncio.create_task(match_timeout(user_id, question_id))
     timeout_tracker[user_id] = timeout_task
 
