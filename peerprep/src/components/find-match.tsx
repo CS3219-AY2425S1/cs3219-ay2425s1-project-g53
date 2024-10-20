@@ -1,14 +1,15 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { use, useContext, useEffect, useState } from 'react';
 import axios from "axios";
 import { Button } from '@mantine/core';
+import { UserContext } from '@/lib/contexts';
+import { useRouter } from 'next/navigation';
+import { UserWithToken } from '@/actions/user';
 
-interface FindMatchProps {
-  questionId: number; // Accept questionId as a prop
-}
-
-export default function FindMatch({ questionId }: FindMatchProps) {
+export default function FindMatch({ questionId, user }: {questionId: number, user: UserWithToken}) {
+  const router = useRouter();
+  
   const [socket, setSocket] = useState<WebSocket | null>(null);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string>('');
@@ -39,7 +40,7 @@ export default function FindMatch({ questionId }: FindMatchProps) {
   }, []);
 
   const handleFindMatch = async () => {
-    const user_id = 123;  // Replace with actual user ID
+    const user_id = user.id;  // Replace with actual user ID
     const question_id = questionId;  // Replace with actual question ID
 
     setLoading(true);
@@ -58,12 +59,8 @@ export default function FindMatch({ questionId }: FindMatchProps) {
   };
 
   return (
-    <div>
-      <h1>Match Page</h1>
-      <p>{message}</p>
-      <Button onClick={handleFindMatch} loading={loading}>
-        Find Match
-      </Button>
-    </div>
+    <Button onClick={handleFindMatch} loading={loading}>
+      Match
+    </Button>
   );
 }
