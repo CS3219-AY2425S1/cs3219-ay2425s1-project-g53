@@ -1,6 +1,6 @@
 "use client";
 
-import {use, useContext, useEffect, useRef, useState} from 'react';
+import { use, useContext, useEffect, useRef, useState } from 'react';
 import axios from "axios";
 import { Button } from '@mantine/core';
 import { UserContext } from '@/lib/contexts';
@@ -14,34 +14,47 @@ export default function FindMatch({ questionId, user }: {questionId: number, use
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string>('');
 
-  useEffect(() => {
-    const user_id = 123;  // Replace with actual user ID
-    const socketUrl = `ws://localhost:8086/ws/${user_id}`;
-    const ws = new WebSocket(socketUrl);
+  // useEffect(() => {
+  //   const user_id = user.id;  // Replace with actual user ID
+  //   const socketUrl = `ws://localhost:8086/ws/${user_id}`;
+  //   const ws = new WebSocket(socketUrl);
 
-    // Store the WebSocket instance in state
-    socket.current = ws;
+  //   // Store the WebSocket instance in state
+  //   socket.current = ws;
+
+  //   // Handle messages from the server
+  //   ws.onmessage = (event) => {
+  //     console.log('Received message:', event.data);
+  //     setMessage(event.data);
+  //   };
+
+  //   // Handle WebSocket closure
+  //   ws.onclose = () => {
+  //     console.log('WebSocket connection closed');
+  //   };
+
+  //   return () => {
+  //     // Clean up WebSocket when component is unmounted
+  //     ws.close();
+  //   };
+  // }, []);
+
+  const handleFindMatch = async () => {
+    const user_id = user.id;  // Replace with actual user ID
+    const question_id = questionId;  // Replace with actual question ID
+
+    socket.current = new WebSocket(`ws://localhost:8086/ws/${user_id}`);
 
     // Handle messages from the server
-    ws.onmessage = (event) => {
+    socket.current.onmessage = (event) => {
       console.log('Received message:', event.data);
       setMessage(event.data);
     };
 
     // Handle WebSocket closure
-    ws.onclose = () => {
+    socket.current.onclose = () => {
       console.log('WebSocket connection closed');
     };
-
-    return () => {
-      // Clean up WebSocket when component is unmounted
-      ws.close();
-    };
-  }, []);
-
-  const handleFindMatch = async () => {
-    const user_id = user.id;  // Replace with actual user ID
-    const question_id = questionId;  // Replace with actual question ID
 
     setLoading(true);
     try {
