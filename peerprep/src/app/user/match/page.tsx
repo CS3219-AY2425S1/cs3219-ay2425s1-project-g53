@@ -2,12 +2,8 @@
 
 import { useState } from 'react';
 import { Center, Select, Group, Button, Text, Notification } from "@mantine/core";
-// import { useCategories, useComplexities } from './hooks'; // Adjust the path as needed
-<<<<<<< HEAD
-=======
-// import LoadingModal from './LoadingModal'; // Adjust the path as needed
->>>>>>> 3fe6a0de45f898140f7c3a3e1a4818318c9c4f92
-import FindMatch from '@/components/find-match';
+// import { useCategories, useComplexities } from './hooks';
+import FindMatch from '../../../components/find-match';
 
 export default function MatchPage() {
   // const { categories, categoriesLoading, categoriesError } = useCategories();
@@ -53,10 +49,9 @@ export default function MatchPage() {
   //   );
   // }
 
-<<<<<<< HEAD
-  return (
+  /* return (
     <Center h="80vh">
-      {/* <div>
+      <div>
         <Text>Select Complexity</Text>
         <Select
           data={complexities.map(c => ({ value: c.id, label: c.name }))}
@@ -64,28 +59,15 @@ export default function MatchPage() {
           value={selectedComplexity}
           onChange={setSelectedComplexity}
         />
-=======
-  // return (
-  //   <Center h="80vh">
-  //     <div>
-  //       <Text>Select Complexity</Text>
-  //       <Select
-  //         data={complexities.map(c => ({ value: c.id, label: c.name }))}
-  //         placeholder="Choose complexity"
-  //         value={selectedComplexity}
-  //         onChange={setSelectedComplexity}
-  //       />
->>>>>>> 3fe6a0de45f898140f7c3a3e1a4818318c9c4f92
 
-  //       <Text>Select Category</Text>
-  //       <Select
-  //         data={categories.map(c => ({ value: c.id, label: c.name }))}
-  //         placeholder="Choose category"
-  //         value={selectedCategory}
-  //         onChange={setSelectedCategory}
-  //       />
+        <Text>Select Category</Text>
+        <Select
+          data={categories.map(c => ({ value: c.id, label: c.name }))}
+          placeholder="Choose category"
+          value={selectedCategory}
+          onChange={setSelectedCategory}
+        />
 
-<<<<<<< HEAD
         <FindMatch questionId={456}/ >
 
         <Notification
@@ -96,29 +78,8 @@ export default function MatchPage() {
         >
           Your match search has timed out.
         </Notification>
-      </div> */}
-      <FindMatch questionId={456} />
+      </div> 
+      <FindMatch questionId={456} user={null} />
     </Center>
-  );
-=======
-  //       <FindMatch questionId={456}/>
-
-  //       <LoadingModal
-  //         opened={isLoading}
-  //         onClose={handleCancel}
-  //         onCancel={handleCancel}
-  //       />
-
-  //       <Notification
-  //         title="Timeout"
-  //         opened={isTimeout}
-  //         onClose={() => setTimeout(false)}
-  //         color="red"
-  //       >
-  //         Your match search has timed out.
-  //       </Notification>
-  //     </div>
-  //   </Center>
-  // );
->>>>>>> 3fe6a0de45f898140f7c3a3e1a4818318c9c4f92
+  ); */
 }
