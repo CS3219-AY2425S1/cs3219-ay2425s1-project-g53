@@ -43,7 +43,7 @@ export default function FindMatch({ questionId, user }: {questionId: number, use
   // }, []);
 
   const handleFindMatch = async () => {
-    const user_id = 123;  // Replace with actual user ID
+    const user_id = user.id;  // Replace with actual user ID
     const question_id = questionId;  // Replace with actual question ID
 
     setLoading(true);
