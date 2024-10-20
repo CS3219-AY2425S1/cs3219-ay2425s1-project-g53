@@ -1,15 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { Modal, Loader, Button, Text } from '@mantine/core';
 
-const MatchTimerModal = ({ opened, onClose, onCancel }) => {
-  const [seconds, setSeconds] = useState(30);
+const MatchTimerModal = ({ opened , onClose, onCancel }: {opened:boolean, onClose:() => void , onCancel: React.MouseEventHandler}) => {
+  const [seconds, setSeconds] = useState(15);
   const [isTimeout, setIsTimeout] = useState(false);
 
   useEffect(() => {
-    let timer = null;
+    let timer: any = null;
 
     if (opened) {
-      setSeconds(30); 
+      setSeconds(15); 
       setIsTimeout(false);
 
       timer = setInterval(() => {

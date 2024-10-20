@@ -7,12 +7,21 @@ import MatchTimerModal from '@/components/match-timer-modal';
 import { UserContext } from '@/lib/contexts';
 import { useRouter } from 'next/navigation';
 import { UserWithToken } from '@/actions/user';
+import { z } from 'zod';
+import { notifications } from '@mantine/notifications';
 
-export default function FindMatch({ questionId, user }: {questionId: number, user: UserWithToken}) {
+const MatchSchema = z.object({
+  user_1: z.string(),
+  user_2: z.string(),
+  question_id: z.number(),
+  match_time: z.string()
+})
+type Match = z.infer<typeof MatchSchema>;
+
+export default function FindMatch({ questionId, user }: { questionId: number, user: UserWithToken }) {
   const router = useRouter();
-  
+
   const socket = useRef<WebSocket | null>(null);
-  const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string>('');
   const [isMatching, setIsMatching] = useState(false);
   const [isTimeout, setIsTimeout] = useState(false);
@@ -54,14 +63,24 @@ export default function FindMatch({ questionId, user }: {questionId: number, use
     // Handle messages from the server
     ws.onmessage = (event) => {
       console.log('Received message:', event.data);
-      setMessage(event.data);
+      try {
+        const match = MatchSchema.parse(JSON.parse(event.data));
+        console.log(match);
+        notifications.show({ message: `Match found with ${match.user_2}`, title: "Match Success", color: "green" });
+      } catch (e) {
+        console.log(e);
+        setIsTimeout(true);
+      notifications.show({ message: "Match attempt timed out, please try again", title: "Match Timeout", color: "red" })
+      }
+      setIsMatching(false);
+      ws.close();
     };
 
     ws.onclose = () => {
       console.log('WebSocket connection closed');
+      // notifications.show({ message: "There was an error while attempting to match, please try again", title: "Server Error", color: "red" })
     };
 
-    setLoading(true);
     setIsMatching(true);
     setIsTimeout(false);
 
@@ -77,31 +96,31 @@ export default function FindMatch({ questionId, user }: {questionId: number, use
       });
 
       console.log('Match response:', response.data);
-      clearTimeout(timer); // Clear timeout if a match is found before 30 seconds
+      // clearTimeout(timer); // Clear timeout if a match is found before 30 seconds
       // ws.close();
-      setIsMatching(false); // Stop matching
+      // setIsMatching(false); // Stop matching
     } catch (error) {
       console.error('Error finding match:', error);
     } finally {
-      setLoading(false); // Reset loading state
+      // setLoading(false); // Reset loading state
     }
   };
 
   const handleCancel = () => {
     setIsMatching(false);
-    setLoading(false);
+    socket.current?.close();
   };
 
   return (
     <div>
-      <Button onClick={handleFindMatch} loading={loading}>
+      <Button onClick={handleFindMatch}>
         Match
       </Button>
 
-      <MatchTimerModal 
-        opened={isMatching} 
-        onClose={() => setIsMatching(false)} 
-        onCancel={handleCancel} 
+      <MatchTimerModal
+        opened={isMatching}
+        onClose={handleCancel}
+        onCancel={handleCancel}
       />
     </div>
   );
