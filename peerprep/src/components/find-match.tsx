@@ -24,7 +24,6 @@ export default function FindMatch({ questionId, user }: { questionId: number, us
   const socket = useRef<WebSocket | null>(null);
   const [message, setMessage] = useState<string>('');
   const [isMatching, setIsMatching] = useState(false);
-  const [isTimeout, setIsTimeout] = useState(false);
 
   // useEffect(() => {
   //   const user_id = user.id;  // Replace with actual user ID
@@ -69,7 +68,6 @@ export default function FindMatch({ questionId, user }: { questionId: number, us
         notifications.show({ message: `Match found with ${match.user_2}`, title: "Match Success", color: "green" });
       } catch (e) {
         console.log(e);
-        setIsTimeout(true);
       notifications.show({ message: "Match attempt timed out, please try again", title: "Match Timeout", color: "red" })
       }
       setIsMatching(false);
@@ -82,12 +80,6 @@ export default function FindMatch({ questionId, user }: { questionId: number, us
     };
 
     setIsMatching(true);
-    setIsTimeout(false);
-
-    const timer = setTimeout(() => {
-      setIsMatching(false);
-      setIsTimeout(true);
-    }, 30000); // 30 seconds
 
     try {
       const response = await axios.post('http://localhost:8086/find_match/', {
@@ -96,7 +88,6 @@ export default function FindMatch({ questionId, user }: { questionId: number, us
       });
 
       console.log('Match response:', response.data);
-      // clearTimeout(timer); // Clear timeout if a match is found before 30 seconds
       // ws.close();
       // setIsMatching(false); // Stop matching
     } catch (error) {
@@ -120,6 +111,7 @@ export default function FindMatch({ questionId, user }: { questionId: number, us
       <MatchTimerModal
         opened={isMatching}
         onClose={handleCancel}
+        withCloseButton={false}
         onCancel={handleCancel}
       />
     </div>
