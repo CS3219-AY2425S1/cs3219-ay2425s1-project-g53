@@ -111,7 +111,6 @@ export default function FindMatch({ questionId, user }: { questionId: number, us
       <MatchTimerModal
         opened={isMatching}
         onClose={handleCancel}
-        withCloseButton={false}
         onCancel={handleCancel}
       />
     </div>
