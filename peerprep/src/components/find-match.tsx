@@ -4,7 +4,11 @@ import { useEffect, useState } from 'react';
 import axios from "axios";
 import { Button } from '@mantine/core';
 
-export default function FindMatch() {
+interface FindMatchProps {
+  questionId: number; // Accept questionId as a prop
+}
+
+export default function FindMatch({ questionId }: FindMatchProps) {
   const [socket, setSocket] = useState<WebSocket | null>(null);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string>('');
@@ -36,8 +40,9 @@ export default function FindMatch() {
 
   const handleFindMatch = async () => {
     const user_id = 123;  // Replace with actual user ID
-    const question_id = 456;  // Replace with actual question ID
+    const question_id = questionId;  // Replace with actual question ID
 
+    setLoading(true);
     try {
       const response = await axios.post('http://localhost:8086/find_match/', {
         user_id,
@@ -47,6 +52,8 @@ export default function FindMatch() {
       console.log('Match response:', response.data);
     } catch (error) {
       console.error('Error finding match:', error);
+    } finally {
+      setLoading(false); // Reset loading state
     }
   };
 

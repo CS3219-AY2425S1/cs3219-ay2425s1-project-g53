@@ -3,6 +3,7 @@
 import { Question } from "@/actions/questions"
 import { Anchor, Table, Text } from "@mantine/core";
 import Link from "next/link";
+import FindMatch from "@/components/find-match";
 
 export default function QuestionTable(props: { questions: Question[] }) {
 
@@ -13,6 +14,9 @@ export default function QuestionTable(props: { questions: Question[] }) {
       <Table.Td><Text lineClamp={1}>{q.description}</Text></Table.Td>
       <Table.Td>{q.categories.map(c => c.name).join(", ")}</Table.Td>
       <Table.Td>{q.complexity}</Table.Td>
+      <Table.Td>
+        <FindMatch questionId={q.id} />
+      </Table.Td>
     </Table.Tr>));
 
   const headers = (
@@ -23,6 +27,7 @@ export default function QuestionTable(props: { questions: Question[] }) {
         <Table.Th w="50%">Description</Table.Th>
         <Table.Th w="20%">Categories</Table.Th>
         <Table.Th w="10%">Complexities</Table.Th>
+        <Table.Th w="10%"></Table.Th>
       </Table.Tr>
     </Table.Thead>)
 
