@@ -2,6 +2,7 @@ import asyncio
 from collections import deque
 from datetime import datetime
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi.middleware.cors import CORSMiddleware
 from typing import Dict
 from . import models
 
@@ -12,6 +13,18 @@ app = FastAPI()
 match_finder: Dict[int, deque] = {}
 connected_users: Dict[int, WebSocket] = {}
 timeout_tracker: Dict[int, asyncio.Task] = {}
+
+origins = [
+    "*",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.get("/check_waiting/")
 async def check_waiting():
