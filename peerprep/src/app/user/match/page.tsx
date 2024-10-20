@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Center, Select, Group, Button, Text, Notification } from "@mantine/core";
-import { useCategories, useComplexities } from './hooks'; // Adjust the path as needed
-import LoadingModal from './LoadingModal'; // Adjust the path as needed
+// import { useCategories, useComplexities } from './hooks'; // Adjust the path as needed
 import FindMatch from '@/components/find-match';
 
 export default function MatchPage() {
@@ -67,13 +66,7 @@ export default function MatchPage() {
           onChange={setSelectedCategory}
         />
 
-        <FindMatch questionId={456}/>
-
-        <LoadingModal
-          opened={isLoading}
-          onClose={handleCancel}
-          onCancel={handleCancel}
-        />
+        <FindMatch questionId={456}/ >
 
         <Notification
           title="Timeout"

@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import axios from "axios";
 import { Button } from '@mantine/core';
+import MatchTimerModal from '@/components/MatchTimer'; // Adjust the path as needed
 
 interface FindMatchProps {
   questionId: number; // Accept questionId as a prop
@@ -64,6 +65,13 @@ export default function FindMatch({ questionId }: FindMatchProps) {
       <Button onClick={handleFindMatch} loading={loading}>
         Find Match
       </Button>
+
+      <MatchTimerModal 
+        opened={isMatching} 
+        onClose={handleCancel} 
+        timeout={isTimeout} 
+        onCancel={handleCancel} 
+      />
     </div>
   );
 }
