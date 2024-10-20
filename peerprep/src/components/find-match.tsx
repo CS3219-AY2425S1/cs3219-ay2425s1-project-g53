@@ -2,9 +2,11 @@
 
 import { useEffect, useState } from 'react';
 import axios from "axios";
+import { Button } from '@mantine/core';
 
 export default function FindMatch() {
   const [socket, setSocket] = useState<WebSocket | null>(null);
+  const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string>('');
 
   useEffect(() => {
@@ -52,6 +54,9 @@ export default function FindMatch() {
     <div>
       <h1>Match Page</h1>
       <p>{message}</p>
+      <Button onClick={handleFindMatch} loading={loading}>
+        Find Match
+      </Button>
     </div>
   );
 }
