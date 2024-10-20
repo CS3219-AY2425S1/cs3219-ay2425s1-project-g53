@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useContext, useEffect, useState } from 'react';
+import {use, useContext, useEffect, useRef, useState} from 'react';
 import axios from "axios";
 import { Button } from '@mantine/core';
 import { UserContext } from '@/lib/contexts';
@@ -10,7 +10,7 @@ import { UserWithToken } from '@/actions/user';
 export default function FindMatch({ questionId, user }: {questionId: number, user: UserWithToken}) {
   const router = useRouter();
   
-  const [socket, setSocket] = useState<WebSocket | null>(null);
+  const socket = useRef<WebSocket | null>(null);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string>('');
 
@@ -20,7 +20,7 @@ export default function FindMatch({ questionId, user }: {questionId: number, use
     const ws = new WebSocket(socketUrl);
 
     // Store the WebSocket instance in state
-    setSocket(ws);
+    socket.current = ws;
 
     // Handle messages from the server
     ws.onmessage = (event) => {

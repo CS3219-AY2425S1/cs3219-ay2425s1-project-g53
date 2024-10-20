@@ -81,15 +81,15 @@ async def find_match(request: models.UserRequest):
 
     return { "message": "Waiting for match..." }
 
-async def notify_match_found(user_id: int):
+async def notify_match_found(user_id: str):
     if user_id in connected_users:
             await connected_users[user_id].send_text("Match found! Please wait while you are connected...")
 
-async def notify_match_timeout(user_id: int):
+async def notify_match_timeout(user_id: str):
     if user_id in connected_users:
             await connected_users[user_id].send_text("Timed out while waiting for match. Please try again.")
 
-async def match_timeout(user_id: int, question_id: int):
+async def match_timeout(user_id: str, question_id: int):
     try:
         await asyncio.sleep(MATCH_TIMEOUT)
         if user_id in match_finder[question_id]:
@@ -99,12 +99,12 @@ async def match_timeout(user_id: int, question_id: int):
     except asyncio.CancelledError:
         pass
 
-async def cancel_timeout(user_id: int):
+async def cancel_timeout(user_id: str):
     if user_id in timeout_tracker:
         timeout_tracker[user_id].cancel()
         del timeout_tracker[user_id]
 
-async def terminate_websocket(user_id: int):
+async def terminate_websocket(user_id: str):
     if user_id in connected_users:
         connected_users[user_id].close()
         del connected_users[user_id]
