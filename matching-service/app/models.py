@@ -1,13 +1,12 @@
 from pydantic import BaseModel
-from uuid import UUID
 from datetime import datetime
 
 class UserRequest(BaseModel):
-    user_id: UUID
+    user_id: str
     question_id: int
 
 class Match(BaseModel):
-    user_1: UUID
-    user_2: UUID
+    user_1: str
+    user_2: str
     question_id: int
     match_time: datetime
