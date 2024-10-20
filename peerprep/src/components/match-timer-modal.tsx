@@ -28,7 +28,7 @@ const MatchTimerModal = ({ opened, onClose, onCancel }: {opened:boolean, onClose
   }, [opened]);
 
   return (
-    <Modal opened={opened} onClose={onClose} title="Finding Match">
+    <Modal opened={opened} onClose={onClose} title="Finding Match" withCloseButton={false}>
       <Center>
         <Loader mr="md" />
         <Text>Searching for a match... {seconds}s</Text>
