@@ -20,6 +20,13 @@ services:
       dockerfile: Dockerfile
     # ports:
       # - "3001:3001" # For debugging, remember to delete in production
+
+  matching-service:
+    build:
+      context: ./matching-service
+      dockerfile: Dockerfile
+    ports:
+      - "8086:8080"
     
   nextjs:
     image: node:latest
