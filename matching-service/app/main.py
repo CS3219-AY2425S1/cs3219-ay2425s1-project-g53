@@ -46,7 +46,15 @@ async def websocket_connect(websocket: WebSocket, user_id: str):
         while True:
             await websocket.receive_text()
     except WebSocketDisconnect:
-        del connected_users[user_id]
+        if user_id in connected_users:
+            del connected_users[user_id]
+        if user_id in timeout_tracker:
+            timeout_tracker[user_id].cancel()
+            del timeout_tracker[user_id]
+        for question_id in match_finder:
+            if user_id in match_finder[question_id]:
+                match_finder[question_id].remove(user_id)
+
 
 @app.post("/find_match/")
 async def find_match(request: models.UserRequest):
