@@ -8,7 +8,7 @@ WORKDIR /peerprep
 RUN npm install -g pnpm
 
 # Install dependencies using pnpm
-COPY package*.json ./
+COPY package*.json pnpm-lock.yaml ./
 RUN pnpm install
 
 # Copy the Next.js app code (everything except what's in .dockerignore)
