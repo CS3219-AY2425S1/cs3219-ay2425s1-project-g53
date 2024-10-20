@@ -12,4 +12,3 @@ const LoadingModal = ({ opened, onClose, onCancel }) => {
 };
 
 export default LoadingModal;
-
