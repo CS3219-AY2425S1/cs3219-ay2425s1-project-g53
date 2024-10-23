@@ -24,18 +24,30 @@ services:
     build:
       context: ./peerprep
       dockerfile: Dockerfile
-    ports:
-      - "3005:3000"
+    # ports:
+    #   - "3005:3000"
     environment:
       - QUESTION_API_URL=http://fastapi:8080
       - USER_API_URL=http://user-service:3001
+    networks:
+      - caddy
+      - default
+    labels:
+      caddy: "peerprep.ginloy.com"
+      caddy.route.1_import: peerprep_auth
+      caddy.route.2_handle_path: '/api/match*'
+      caddy.route.2_handle_path.reverse_proxy: matching-service:8080
+      caddy.route.3_reverse_proxy: "{{upstreams http 3000}}"
 
   matching-service:
     build:
       context: ./matching-service
       dockerfile: Dockerfile
-    ports:
-      - "8086:8080"
+    # ports:
+    #   - "8086:8080"
+    networks:
+      - default
+      - caddy
 
   postgres:
     image: postgres:14
@@ -50,3 +62,7 @@ services:
 
 volumes:
   postgres_data:
+
+networks:
+  caddy:
+    external: true

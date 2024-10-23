@@ -3,6 +3,7 @@ from collections import deque
 from datetime import datetime
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import ValidationError
 from typing import Dict
 from . import models
 
@@ -10,7 +11,7 @@ MATCH_TIMEOUT = 15
 
 app = FastAPI()
 
-match_finder: Dict[str, deque] = {}
+match_finder: Dict[int, deque] = {}
 connected_users: Dict[str, WebSocket] = {}
 timeout_tracker: Dict[str, asyncio.Task] = {}
 
@@ -44,7 +45,13 @@ async def websocket_connect(websocket: WebSocket, user_id: str):
     connected_users[user_id] = websocket
     try:
         while True:
-            await websocket.receive_text()
+            text = await websocket.receive_text()
+            try:
+                request = models.UserRequest.parse_raw(text)
+                await find_match(request)
+            except ValidationError:
+                print(f"Unknown message received: {text}")
+            
     except WebSocketDisconnect:
         if user_id in connected_users:
             del connected_users[user_id]
@@ -56,7 +63,6 @@ async def websocket_connect(websocket: WebSocket, user_id: str):
                 match_finder[question_id].remove(user_id)
 
 
-@app.post("/find_match/")
 async def find_match(request: models.UserRequest):
     user_id = request.user_id
     question_id = request.question_id
@@ -78,7 +84,6 @@ async def find_match(request: models.UserRequest):
         await notify_match_found(collab_user, collab_user_new_match)
         await cancel_timeout(collab_user)
 
-        return
     
     print(match_finder)
     match_finder[question_id].append(user_id)
@@ -87,7 +92,6 @@ async def find_match(request: models.UserRequest):
     timeout_task = asyncio.create_task(match_timeout(user_id, question_id))
     timeout_tracker[user_id] = timeout_task
 
-    return { "message": "Waiting for match..." }
 
 async def notify_match_found(user_id: str, match: models.Match):
     if user_id in connected_users:

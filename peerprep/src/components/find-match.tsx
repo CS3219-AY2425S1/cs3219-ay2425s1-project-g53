@@ -25,41 +25,31 @@ export default function FindMatch({ questionId, user }: { questionId: number, us
   const [message, setMessage] = useState<string>('');
   const [isMatching, setIsMatching] = useState(false);
 
-  // useEffect(() => {
-  //   const user_id = user.id;  // Replace with actual user ID
-  //   const socketUrl = `ws://localhost:8086/ws/${user_id}`;
-  //   const ws = new WebSocket(socketUrl);
-
-  //   // Store the WebSocket instance in state
-  //   socket.current = ws;
-
-  //   // Handle messages from the server
-  //   ws.onmessage = (event) => {
-  //     console.log('Received message:', event.data);
-  //     setMessage(event.data);
-  //   };
-
-  //   // Handle WebSocket closure
-  //   ws.onclose = () => {
-  //     console.log('WebSocket connection closed');
-  //   };
-
-  //   return () => {
-  //     // Clean up WebSocket when component is unmounted
-  //     ws.close();
-  //   };
-  // }, []);
-
   const handleFindMatch = async () => {
-    const user_id = user.id;  // Replace with actual user ID
-    const question_id = questionId;  // Replace with actual question ID
-    const socketUrl = `ws://localhost:8086/ws/${user_id}`;
+    setIsMatching(true);
+    const user_id = user.id;
+    const question_id = questionId;
+    let socketUrl = new URL(`/api/match/ws/${user_id}`, window.location.origin);
+    socketUrl.protocol = socketUrl.protocol.replace("http", "ws");
     const ws = new WebSocket(socketUrl);
 
     // Store the WebSocket instance in state
     socket.current = ws;
 
     // Handle messages from the server
+    ws.onopen = (event) => {
+      ws.send(JSON.stringify({
+        user_id,
+        question_id
+      }));
+    }
+
+    ws.onerror = (event) => {
+      setIsMatching(false);
+      console.log(event);
+      notifications.show({ message: "Error while connecting to the server, please try again", title: "Server Error", color: "red" });
+    }
+
     ws.onmessage = (event) => {
       console.log('Received message:', event.data);
       try {
@@ -68,34 +58,18 @@ export default function FindMatch({ questionId, user }: { questionId: number, us
         notifications.show({ message: `Match found with ${match.user_2}`, title: "Match Success", color: "green" });
       } catch (e) {
         console.log(e);
-      notifications.show({ message: "Match attempt timed out, please try again", title: "Match Timeout", color: "red" })
+        notifications.show({ message: "Match attempt timed out, please try again", title: "Match Timeout", color: "red" })
       }
       setIsMatching(false);
       ws.close();
     };
 
     ws.onclose = () => {
+      socket.current = null;
+      setIsMatching(false);
       console.log('WebSocket connection closed');
-      // notifications.show({ message: "There was an error while attempting to match, please try again", title: "Server Error", color: "red" })
     };
-
-    setIsMatching(true);
-
-    try {
-      const response = await axios.post('http://localhost:8086/find_match/', {
-        user_id,
-        question_id,
-      });
-
-      console.log('Match response:', response.data);
-      // ws.close();
-      // setIsMatching(false); // Stop matching
-    } catch (error) {
-      console.error('Error finding match:', error);
-    } finally {
-      // setLoading(false); // Reset loading state
-    }
-  };
+  }
 
   const handleCancel = () => {
     setIsMatching(false);
@@ -103,7 +77,7 @@ export default function FindMatch({ questionId, user }: { questionId: number, us
   };
 
   return (
-    <div>
+    <>
       <Button onClick={handleFindMatch}>
         Match
       </Button>
@@ -113,6 +87,6 @@ export default function FindMatch({ questionId, user }: { questionId: number, us
         onClose={handleCancel}
         onCancel={handleCancel}
       />
-    </div>
+    </>
   );
 }
