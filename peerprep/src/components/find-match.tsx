@@ -24,6 +24,11 @@ export default function FindMatch({ questionId, user }: { questionId: number, us
   const socket = useRef<WebSocket | null>(null);
   const [message, setMessage] = useState<string>('');
   const [isMatching, setIsMatching] = useState(false);
+  useEffect(() => {
+    return () => {
+      socket.current?.close();
+    }
+  }, [])
 
   const handleFindMatch = async () => {
     setIsMatching(true);
