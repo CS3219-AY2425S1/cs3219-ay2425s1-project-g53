@@ -1,7 +1,7 @@
 import asyncio
 from collections import deque
 from datetime import datetime
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import ValidationError
 from typing import Dict
@@ -41,6 +41,9 @@ async def check_sockets():
 # A timeout or successful match will terminate the websocket connection.
 @app.websocket("/ws/{user_id}")
 async def websocket_connect(websocket: WebSocket, user_id: str):
+    if user_id in connected_users:
+        raise HTTPException(status_code=400, detail="User already matching")
+    
     await websocket.accept()
     connected_users[user_id] = websocket
     try:
