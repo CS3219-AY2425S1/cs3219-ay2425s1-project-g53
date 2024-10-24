@@ -88,6 +88,10 @@ export default function FindMatch({ questionId, user }: { questionId: number, us
       </Button>
 
       <MatchTimerModal
+        onTimeout={() => {
+          notifications.show({ message: "Match attempt timed out, please try again", title: "Match Timeout", color: "red" });
+          socket.current?.close();
+        }}
         opened={isMatching}
         onClose={handleCancel}
         onCancel={handleCancel}

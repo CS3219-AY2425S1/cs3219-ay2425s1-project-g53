@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Modal, Loader, Button, Text, Center } from '@mantine/core';
 
-const MatchTimerModal = ({ opened, onClose, onCancel }: {opened:boolean, onClose:() => void, onCancel: React.MouseEventHandler}) => {
+const MatchTimerModal = ({ opened, onClose, onCancel, onTimeout }: {opened:boolean, onClose:() => void, onCancel: React.MouseEventHandler, onTimeout: () => void}) => {
   const [seconds, setSeconds] = useState(15);
   const [isTimeout, setIsTimeout] = useState(false);
 
@@ -17,6 +17,7 @@ const MatchTimerModal = ({ opened, onClose, onCancel }: {opened:boolean, onClose
           if (prev <= 1) { 
             clearInterval(timer);
             setIsTimeout(true);
+            onTimeout();
             return 0; 
           }
           return prev - 1; 
