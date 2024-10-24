@@ -24,6 +24,8 @@ export default function FindMatch({ questionId, user }: { questionId: number, us
   const socket = useRef<WebSocket | null>(null);
   const [message, setMessage] = useState<string>('');
   const [isMatching, setIsMatching] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
   useEffect(() => {
     return () => {
       socket.current?.close();
@@ -31,7 +33,7 @@ export default function FindMatch({ questionId, user }: { questionId: number, us
   }, [])
 
   const handleFindMatch = async () => {
-    setIsMatching(true);
+    setIsLoading(true);
     const user_id = user.id;
     const question_id = questionId;
     let socketUrl = new URL(`/api/match/ws/${user_id}`, window.location.origin);
@@ -43,6 +45,7 @@ export default function FindMatch({ questionId, user }: { questionId: number, us
 
     // Handle messages from the server
     ws.onopen = (event) => {
+      setIsMatching(true);
       ws.send(JSON.stringify({
         user_id,
         question_id
@@ -53,6 +56,7 @@ export default function FindMatch({ questionId, user }: { questionId: number, us
       setIsMatching(false);
       console.log(event);
       notifications.show({ message: "Error while connecting to the server, please try again", title: "Server Error", color: "red" });
+      ws.close();
     }
 
     ws.onmessage = (event) => {
@@ -70,6 +74,7 @@ export default function FindMatch({ questionId, user }: { questionId: number, us
     };
 
     ws.onclose = () => {
+      setIsLoading(false);
       socket.current = null;
       setIsMatching(false);
       console.log('WebSocket connection closed');
@@ -83,7 +88,7 @@ export default function FindMatch({ questionId, user }: { questionId: number, us
 
   return (
     <>
-      <Button onClick={handleFindMatch}>
+      <Button onClick={handleFindMatch} loading={isLoading}>
         Match
       </Button>
 
