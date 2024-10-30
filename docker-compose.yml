@@ -29,6 +29,7 @@ services:
     environment:
       - QUESTION_API_URL=http://fastapi:8080
       - USER_API_URL=http://user-service:3001
+      - NEXT_PUBLIC_MATCH_API_URL=wss://peerprep.ginloy.com/api/match
     networks:
       - caddy
       - default

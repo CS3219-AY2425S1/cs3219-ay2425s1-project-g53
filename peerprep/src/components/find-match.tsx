@@ -36,8 +36,9 @@ export default function FindMatch({ questionId, user }: { questionId: number, us
     setIsLoading(true);
     const user_id = user.id;
     const question_id = questionId;
-    let socketUrl = new URL(`/api/match/ws/${user_id}`, window.location.origin);
-    socketUrl.protocol = socketUrl.protocol.replace("http", "ws");
+
+    let socketUrl = new URL(`${process.env.NEXT_PUBLIC_MATCH_API_URL}/ws/${user_id}`);
+
     const ws = new WebSocket(socketUrl);
 
     // Store the WebSocket instance in state
