@@ -16,6 +16,9 @@ export default function Home() {
         <Link href="/questions">
           <Button w="100%">Question List</Button>
         </Link>
+        <Link href="/history">
+          <Button w="100%">Attempt History</Button>
+        </Link>
         {user ?
           <Button onClick={e => logout()}>
             Log Out
