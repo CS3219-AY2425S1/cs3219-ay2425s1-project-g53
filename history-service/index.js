@@ -5,8 +5,8 @@ const cors = require('cors')
 // store it in the app variable
 const app = express()
 
-app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
 app.use(cors()); // config cors so that front-end can use
 app.options("*", cors());
 
@@ -26,6 +26,8 @@ const PORT = process.env.PORT || 8088
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}...`)
 })
+
+app.use('/api/attempts', require('./routes/attemptRoutes'))
 
 // Test whether api is up
 app.get('/', (req, res) => {
