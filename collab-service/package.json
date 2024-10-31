@@ -35,6 +35,9 @@
     "@hocuspocus/server": "^2.13.7",
     "dotenv": "^16.4.5",
     "express": "^4.21.1",
-    "express-ws": "^5.0.2"
+    "express-ws": "^5.0.2",
+    "uuid": "^11.0.2",
+    "yjs": "^13.6.20",
+    "zod": "^3.23.8"
   }
 }
