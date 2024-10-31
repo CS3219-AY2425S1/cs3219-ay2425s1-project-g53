@@ -19,7 +19,7 @@ Attempt to create a session with 2 users and a question.
 
 #### Request Body
 
-```json
+```
   {
     user_1: string,
     user_2: string,
@@ -39,6 +39,6 @@ userid: unique identifier of user
 
 #### Response Body
 
-```json
+```
 [session1, sessions2, ...] | []
 ```
