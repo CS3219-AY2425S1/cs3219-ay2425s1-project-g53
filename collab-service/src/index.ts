@@ -4,6 +4,7 @@ import 'dotenv/config';
 import cors from 'cors';
 import { Document, Server } from '@hocuspocus/server';
 import { MatchSchema, SessionManager } from "./session_manager"
+import bodyParser from 'body-parser'
 
 const { app } = expressWebsockets(express());
 app.use(cors());
@@ -40,12 +41,13 @@ app.ws("/ws/:session", (websocket, request) => {
 	server.handleConnection(websocket, request);
 })
 
-app.post("/create", (request, response) => {
+app.post("/create", bodyParser.json(), (request, response) => {
 	try {
 		const match = MatchSchema.parse(request.body);
 		const sessionName = sessionManager.createSession(match);
 		response.status(200).send(sessionName);
 	} catch (error) {
+		console.log(error);
 		response.status(400).send("Failed to parse request body");
 	}
 });

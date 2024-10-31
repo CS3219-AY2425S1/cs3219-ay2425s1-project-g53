@@ -11,6 +11,9 @@ importers:
       '@hocuspocus/server':
         specifier: ^2.13.7
         version: 2.13.7(y-protocols@1.0.6(yjs@13.6.20))(yjs@13.6.20)
+      body-parser:
+        specifier: ^1.20.3
+        version: 1.20.3
       cors:
         specifier: ^2.8.5
         version: 2.8.5
@@ -36,6 +39,9 @@ importers:
       '@types/async-lock':
         specifier: ^1.4.2
         version: 1.4.2
+      '@types/body-parser':
+        specifier: ^1.19.5
+        version: 1.19.5
       '@types/cors':
         specifier: ^2.8.17
         version: 2.8.17
