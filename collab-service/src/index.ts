@@ -1,10 +1,12 @@
 import express from 'express';
 import expressWebsockets from 'express-ws';
 import 'dotenv/config';
+import cors from 'cors';
 import { Document, Server } from '@hocuspocus/server';
 import { MatchSchema, SessionManager } from "./session_manager"
 
 const { app } = expressWebsockets(express());
+app.use(cors());
 const PORT = process.env.PORT ?? '3000';
 const TIMEOUT = (() => {
 	const temp = process.env.TIMEOUT;
