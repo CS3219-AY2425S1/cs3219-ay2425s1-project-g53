@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const AttemptSchema = mongoose.schema({
+const AttemptSchema = mongoose.Schema({
     users: [
         { type: String, required: true }
     ],
