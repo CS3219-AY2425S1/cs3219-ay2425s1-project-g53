@@ -27,7 +27,7 @@ app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}...`)
 })
 
-app.use('/api/attempts', require('./routes/attemptRoutes'))
+app.use('/', require('./routes/attemptRoutes'))
 
 // Test whether api is up
 app.get('/', (req, res) => {
