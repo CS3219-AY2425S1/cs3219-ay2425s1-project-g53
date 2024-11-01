@@ -14,7 +14,7 @@ Use session name as yjs document.
 #### Request params
 session: Session Name returned by /create
 #### Errors
-Websocket closes with status code 1002 if session does not exist
+Websocket closes with status code 4000 if session does not exist
 
 ### /create (POST)
 Attempt to create a session with 2 users and a question.

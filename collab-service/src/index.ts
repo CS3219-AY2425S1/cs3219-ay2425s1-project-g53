@@ -41,7 +41,7 @@ app.ws("/ws/:session", (websocket, request, next ) => {
 		console.log(error);
 	}
 	if (!sessionManager.getSession(sessionName)) {
-		websocket.close(1002, "Session does not exist");
+		websocket.close(4000, "Session does not exist");
 		return;
 	}
 	server.handleConnection(websocket, request);
