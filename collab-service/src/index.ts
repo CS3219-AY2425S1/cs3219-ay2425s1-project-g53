@@ -26,16 +26,22 @@ const sessionManager = new SessionManager();
 
 const server = Server.configure({
 	async onStoreDocument(data) {
+		console.log(`Store document ${data.documentName}`);
 		sessionManager.saveSession(data.documentName, data.document);
 	},
 	async onLoadDocument(data): Promise<Document> {
+		console.log(`Load document ${data.documentName}`);
 		return sessionManager.getSession(data.documentName)?.document ?? new Document(data.documentName);
 	},
 })
 
-app.ws("/ws/:session", (websocket, request) => {
+app.ws("/ws/:session", (websocket, request, next ) => {
 	const sessionName = request.params.session;
+	websocket.onerror = (error) => {
+		console.log(error);
+	}
 	if (!sessionManager.getSession(sessionName)) {
+		websocket.close(1002, "Session does not exist");
 		return;
 	}
 	server.handleConnection(websocket, request);
