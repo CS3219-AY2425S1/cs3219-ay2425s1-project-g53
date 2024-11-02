@@ -29,8 +29,8 @@ export default function AttemptTable(props: { attempts: Attempt[] }) {
 
   const rows = props.attempts.map(q => (
     <Table.Tr>
-      <Table.Td>{q.id}</Table.Td>
-      <Table.Td>{q.users[0]}</Table.Td>
+      {/* <Table.Td>{q.id}</Table.Td> */}
+      {/* <Table.Td>{q.users[0]}</Table.Td> */}
       <Table.Td>{q.users[1]}</Table.Td>
       <Table.Td>{q.problem}</Table.Td>
       <Table.Td>{q.attemptStart}</Table.Td>
@@ -39,7 +39,7 @@ export default function AttemptTable(props: { attempts: Attempt[] }) {
         <span
           onClick={() => handleDownload(q.attemptCode)}
           style={{ cursor: 'pointer', color: 'blue', textDecoration: 'underline' }}
-        ><IconDownload></IconDownload>
+        ><IconDownload color="lightblue"></IconDownload>
         </span>
       </Table.Td>
     </Table.Tr>));
@@ -47,13 +47,13 @@ export default function AttemptTable(props: { attempts: Attempt[] }) {
   const headers = (
     <Table.Thead>
         <Table.Tr>
-            <Table.Th>docId</Table.Th>
-            <Table.Th>user1</Table.Th>
-            <Table.Th>user2</Table.Th>
-            <Table.Th>problem</Table.Th>
-            <Table.Th>attempt_start</Table.Th>
-            <Table.Th>attempt_end</Table.Th>
-            <Table.Th>attempt_code</Table.Th>
+            {/* <Table.Th>docId</Table.Th> */}
+            {/* <Table.Th>user1</Table.Th> */}
+            <Table.Th>Partner</Table.Th>
+            <Table.Th>Problem</Table.Th>
+            <Table.Th>Attempt Start</Table.Th>
+            <Table.Th>Attempt End</Table.Th>
+            <Table.Th>View Saved Attempt</Table.Th>
         </Table.Tr>
     </Table.Thead>)
 
