@@ -29,7 +29,9 @@ services:
     environment:
       - QUESTION_API_URL=http://fastapi:8080
       - USER_API_URL=http://user-service:3001
-      - NEXT_PUBLIC_MATCH_API_URL=wss://peerprep.ginloy.com/api/match
+      - NEXT_PUBLIC_MATCH_WS_URL=wss://peerprep.ginloy.com/api/match
+      - NEXT_PUBLIC_COLLAB_WS_URL=wss://peerprep.ginloy.com/api/collab
+      - COLLAB_API_URL=http://collab-service:3000
     networks:
       - caddy
       - default
@@ -39,7 +41,10 @@ services:
       caddy.route.2_handle_path: '/api/match*'
       caddy.route.2_handle_path.reverse_proxy: matching-service:8080
       caddy.route.2_handle_path.reverse_proxy.stream_close_delay: 6h
-      caddy.route.3_reverse_proxy: "{{upstreams http 3000}}"
+      caddy.route.3_handle_path: '/api/collab*'
+      caddy.route.3_handle_path.reverse_proxy: collab-service:3000
+      caddy.route.3_handle_path.reverse_proxy.stream_close_delay: 6h
+      caddy.route.4_reverse_proxy: "{{upstreams http 3000}}"
 
   matching-service:
     build:
@@ -50,6 +55,13 @@ services:
     networks:
       - default
       - caddy
+
+  collab-service:
+    build:
+      context: ./collab-service
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
 
   postgres:
     image: postgres:14

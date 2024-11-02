@@ -1,7 +1,6 @@
 "use client";
 
 import { use, useContext, useEffect, useRef, useState } from 'react';
-import axios from "axios";
 import { Button, Notification } from '@mantine/core';
 import MatchTimerModal from '@/components/match-timer-modal';
 import { UserContext } from '@/lib/contexts';
@@ -9,14 +8,8 @@ import { useRouter } from 'next/navigation';
 import { UserWithToken } from '@/actions/user';
 import { z } from 'zod';
 import { notifications } from '@mantine/notifications';
-
-const MatchSchema = z.object({
-  user_1: z.string(),
-  user_2: z.string(),
-  question_id: z.number(),
-  match_time: z.string()
-})
-type Match = z.infer<typeof MatchSchema>;
+import { MatchSchema, Match } from '@/lib/schemas';
+import { createSession } from '@/actions/collab'
 
 export default function FindMatch({ questionId, user }: { questionId: number, user: UserWithToken }) {
   const router = useRouter();
@@ -37,7 +30,7 @@ export default function FindMatch({ questionId, user }: { questionId: number, us
     const user_id = user.id;
     const question_id = questionId;
 
-    let socketUrl = new URL(`${process.env.NEXT_PUBLIC_MATCH_API_URL}/ws/${user_id}`);
+    let socketUrl = new URL(`${process.env.NEXT_PUBLIC_MATCH_WS_URL}/ws/${user_id}`);
 
     const ws = new WebSocket(socketUrl);
 
@@ -66,6 +59,10 @@ export default function FindMatch({ questionId, user }: { questionId: number, us
         const match = MatchSchema.parse(JSON.parse(event.data));
         console.log(match);
         notifications.show({ message: `Match found with ${match.user_2}`, title: "Match Success", color: "green" });
+        (async () => {
+          const session = await createSession(match);
+          router.push(`/user/session/${session}`);
+        })();
       } catch (e) {
         console.log(e);
         notifications.show({ message: "Match attempt timed out, please try again", title: "Match Timeout", color: "red" })
