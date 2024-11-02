@@ -5,7 +5,7 @@ const { fetchAllAttempts, addAttempt, stringToBuffer, BufferToString, fetchUserA
 
 router.route('/').get(fetchAllAttempts);
 
-router.route('/fetchUserAttempts').get(fetchUserAttempts);
+router.route('/fetchUserAttempts/:user').get(fetchUserAttempts);
 
 router.route('/stringToBuffer').post(stringToBuffer);
 

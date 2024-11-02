@@ -51,7 +51,7 @@ const addAttempt = async (req, res) => {
 }
 
 const fetchUserAttempts = async (req, res) => {
-    const { user } = req.body;
+    const { user } = req.params;
 
     try {
         const attempts = await Attempt.find({ users: user });
