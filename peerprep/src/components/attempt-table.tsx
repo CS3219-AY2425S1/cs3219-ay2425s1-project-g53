@@ -11,6 +11,7 @@ export default function AttemptTable(props: { attempts: Attempt[] }) {
 
   const rows = props.attempts.map(q => (
     <Table.Tr>
+      <Table.Td>{q.id}</Table.Td>
       <Table.Td>{q.users[0]}</Table.Td>
       <Table.Td>{q.users[1]}</Table.Td>
       <Table.Td>{q.problem}</Table.Td>
@@ -21,12 +22,15 @@ export default function AttemptTable(props: { attempts: Attempt[] }) {
 
   const headers = (
     <Table.Thead>
-        <Table.Th>user1</Table.Th>
-        <Table.Th>user2</Table.Th>
-        <Table.Th>problem</Table.Th>
-        <Table.Th>attempt_start</Table.Th>
-        <Table.Th>attempt_end</Table.Th>
-        <Table.Th>attempt_code</Table.Th>
+        <Table.Tr>
+            <Table.Th>docId</Table.Th>
+            <Table.Th>user1</Table.Th>
+            <Table.Th>user2</Table.Th>
+            <Table.Th>problem</Table.Th>
+            <Table.Th>attempt_start</Table.Th>
+            <Table.Th>attempt_end</Table.Th>
+            <Table.Th>attempt_code</Table.Th>
+        </Table.Tr>
     </Table.Thead>)
 
   return (
