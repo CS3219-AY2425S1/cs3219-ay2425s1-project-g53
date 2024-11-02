@@ -10,23 +10,6 @@ const fetchAllAttempts = async (req, res) => {
     }
 }
 
-// Debugging function
-const stringToBuffer = async (req, res) => {
-    const { code } = req.body;
-    var temp = Buffer.from(code);
-    console.log(temp);
-    console.log(temp.toString());
-
-    return res.status(201).json(temp);
-}
-
-// Debugging function
-const BufferToString = async (req, res) => {
-    const { buffer } = req.body;
-
-    return res.status(201).json(buffer.toString());
-}
-
 const addAttempt = async (req, res) => {
     const { user1, user2, problem, start, end, code } = req.body;
 
@@ -77,6 +60,17 @@ const fetchUserAttempts = async (req, res) => {
     }
 }
 
+const clearAllAttempts = async (req, res) => {
+    try {
+        const deleteAll = await Attempt.deleteMany({});
+
+        res.status(200).json({ "message" : "All attempt documents deleted. "});
+    } catch (err) {
+        console.log("Error deleting all attempts:", err);
+        res.status(500).json({ "message" : "Unable to delete all documents. Please try again later." });
+    }
+}
+
 // Used for debugging
 const deleteAttempt = async (req, res) => {
     const { attemptId } = req.body;
@@ -95,15 +89,21 @@ const deleteAttempt = async (req, res) => {
     }
 }
 
-const clearAllAttempts = async (req, res) => {
-    try {
-        const deleteAll = await Attempt.deleteMany({});
+// Debugging function
+const stringToBuffer = async (req, res) => {
+    const { code } = req.body;
+    var temp = Buffer.from(code);
+    console.log(temp);
+    console.log(temp.toString());
 
-        res.status(200).json({ "message" : "All attempt documents deleted. "});
-    } catch (err) {
-        console.log("Error deleting all attempts:", err);
-        res.status(500).json({ "message" : "Unable to delete all documents. Please try again later." });
-    }
+    return res.status(201).json(temp);
+}
+
+// Debugging function
+const BufferToString = async (req, res) => {
+    const { buffer } = req.body;
+
+    return res.status(201).json(buffer.toString());
 }
 
 module.exports = { fetchAllAttempts, addAttempt, stringToBuffer, BufferToString, fetchUserAttempts, deleteAttempt, clearAllAttempts }
