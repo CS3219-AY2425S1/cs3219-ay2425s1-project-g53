@@ -5,7 +5,6 @@ import { Anchor, Table, Text } from "@mantine/core";
 import Link from "next/link";
 import { UserContext } from "@/lib/contexts";
 import { use } from "react";
-import AttemptDownload from "./attempt-download";
 import { IconDownload } from "@tabler/icons-react";
 
 export default function AttemptTable(props: { attempts: Attempt[] }) {
