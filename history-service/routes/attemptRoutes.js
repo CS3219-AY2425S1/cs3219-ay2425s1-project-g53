@@ -1,11 +1,13 @@
 const express = require('express')
 const router  = express.Router();
 
-const { fetchAllAttempts, addAttempt, stringToBuffer, BufferToString, fetchUserAttempts, deleteAttempt, clearAllAttempts } = require('../controllers/attemptController')
+const { fetchAllAttempts, addAttempt, stringToBuffer, BufferToString, fetchUserAttempts, deleteAttempt, clearAllAttempts, fetchAttemptCode } = require('../controllers/attemptController')
 
 router.route('/').get(fetchAllAttempts);
 
 router.route('/fetchUserAttempts/:user').get(fetchUserAttempts);
+
+router.route('/fetchAttemptCode/:docId').get(fetchAttemptCode);
 
 router.route('/stringToBuffer').post(stringToBuffer);
 

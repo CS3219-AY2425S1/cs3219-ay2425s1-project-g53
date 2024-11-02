@@ -60,6 +60,25 @@ const fetchUserAttempts = async (req, res) => {
     }
 }
 
+const fetchAttemptCode = async (req, res) => {
+    const { docId } = req.params;
+
+    try {
+        const attempt = await Attempt.findById(docId).select('attemptCode');
+
+        if (!attempt) {
+            return res.status(404).json({ "message": "Attempt not found with id " + docId });
+        }
+
+        const attemptCode = attempt.attemptCode.toString();
+
+        res.status(201).json(attemptCode);
+    } catch (err) {
+        console.log("Error trying to retrieve document details", err);
+        res.status(500).json({ "message" : "Unable to retrieve attempt with id " + docId });
+    }
+}
+
 const clearAllAttempts = async (req, res) => {
     try {
         const deleteAll = await Attempt.deleteMany({});
@@ -106,4 +125,4 @@ const BufferToString = async (req, res) => {
     return res.status(201).json(buffer.toString());
 }
 
-module.exports = { fetchAllAttempts, addAttempt, stringToBuffer, BufferToString, fetchUserAttempts, deleteAttempt, clearAllAttempts }
+module.exports = { fetchAllAttempts, addAttempt, stringToBuffer, BufferToString, fetchUserAttempts, fetchAttemptCode, deleteAttempt, clearAllAttempts }
