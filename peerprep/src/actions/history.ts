@@ -25,7 +25,11 @@ export async function getUserAttempts(user: string): Promise<Attempt[]> {
   return await fetch(`http://history-service:8088/fetchUserAttempts/${user}`, {cache: "no-store" })
 .then(checkOk)
 .then((r) => r.json())
-.then((data) => AttemptSchema.array().parse(data)) // Adjusted to validate the array
+.then((data) => {
+    const validatedData = AttemptSchema.array().parse(data); // Validate the array using Zod schema
+    const sortedData = validatedData.sort((a, b) => new Date(b.attemptStart).getTime() - new Date(a.attemptStart).getTime());
+    return sortedData;
+  })
 .catch((error) => {
     console.error("Failed to fetch attempts:", error);
     throw error;
