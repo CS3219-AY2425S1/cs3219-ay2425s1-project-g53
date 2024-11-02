@@ -57,14 +57,17 @@ export const verifyCurrentUser = async () => {
     return false;
   }
   const path = `${API_URL}/auth/verify-token`;
-  return await fetchResult(path, { headers: { "Authorization": `Bearer ${user.accessToken}` }, cache: "no-store" })
-    .map(r => {
+  const res = await fetchResult(path, { headers: { "Authorization": `Bearer ${user.accessToken}` }, cache: "no-store" })
+    .map(async r => {
       if (r.ok) {
         return true;
       }
-      logout();
       return false;
     }).unwrapOr(false);
+  if (!res) {
+    await logout();
+  }
+  return res;
 }
 
 export const logout = async () => {
