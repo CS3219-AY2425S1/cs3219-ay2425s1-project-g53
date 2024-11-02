@@ -36,6 +36,7 @@ services:
       - QUESTION_API_URL=http://fastapi:8080
       - USER_API_URL=http://user-service:3001
       - NEXT_PUBLIC_MATCH_API_URL=ws://localhost:8086
+      - HISTORY_API_URL=http://localhost:8088
 
   matching-service:
     build:
@@ -43,6 +44,13 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8086:8080"
+
+  history-service:
+    build:
+      context: ./history-service
+      dockerfile: Dockerfile
+    ports:
+      - "8088:8081"
 
   postgres:
     image: postgres:14
