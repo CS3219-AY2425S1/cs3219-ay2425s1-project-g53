@@ -25,6 +25,7 @@ const TIMEOUT = (() => {
 const sessionManager = new SessionManager();
 
 const server = Server.configure({
+	timeout: 500,
 	async onStoreDocument(data) {
 		console.log(`Store document ${data.documentName}`);
 		sessionManager.saveSession(data.documentName, data.document);

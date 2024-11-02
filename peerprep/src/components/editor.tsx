@@ -1,5 +1,6 @@
 "use client"
 
+import dynamic from "next/dynamic";
 import { Editor, Monaco, } from "@monaco-editor/react"
 import monaco from "monaco-editor";
 import * as Y from 'yjs'
@@ -7,10 +8,11 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { MonacoBinding } from "y-monaco";
 import { HocuspocusProvider } from "@hocuspocus/provider";
 import { Select, Stack } from "@mantine/core";
+import Loading from "./loading";
 
-export default function CodeEditor() {
+export default function CodeEditor({ sessionName }: { sessionName: string }) {
   const ydoc = useMemo(() => new Y.Doc(), []);
-  const provider = useMemo(() => new HocuspocusProvider({ url: "ws://192.168.0.118:5005", name: "monaco-demo-ginloy", document: ydoc }), [ydoc]);
+  const [provider, setProvider] = useState<HocuspocusProvider>();
   const editor = useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
   const binding = useRef<MonacoBinding | null>(null);
   const yMap = useRef<Y.Map<string> | null>(null);
@@ -25,6 +27,27 @@ export default function CodeEditor() {
       }
     }} />
   )
+
+  useEffect(() => {
+    console.log("Connection");
+    const p = new HocuspocusProvider({
+      url: `${process.env.NEXT_PUBLIC_COLLAB_WS_URL}/ws/${sessionName}`, name: sessionName, document: ydoc, onClose: () => {
+        console.log("close");
+        binding.current?.destroy();
+        editor.current?.dispose();
+      }
+    });
+    setProvider(p);
+    return () => {
+      console.log(p);
+      p.disconnect();
+      p.destroy();
+    }
+  }, [ydoc])
+
+  if (!provider) {
+    return <Loading />
+  }
 
   return (
     <>
@@ -52,7 +75,7 @@ export default function CodeEditor() {
                }
           `}
       </style>
-      <Stack h="calc(100vh - 60px)">
+      <Stack h="100%" w="100%">
         {languageSelector}
         <Editor width="100%" language={language} theme="vs-dark" onMount={(e, m) => {
           editor.current = e;
