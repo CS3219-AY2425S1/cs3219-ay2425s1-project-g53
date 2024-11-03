@@ -3,6 +3,7 @@
 import { Category, Complexity, Question, QuestionAdd } from "@/actions/questions";
 import { Group, TextInput, Stack, Select, MultiSelect, Button, Space, ScrollArea, MantineThemeContext, Modal } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
+import { notifications } from "@mantine/notifications";
 import { Editor } from "@monaco-editor/react";
 import { use, useState } from "react";
 import Markdown from "react-markdown";
@@ -33,19 +34,26 @@ export default function MarkdownQuestionForm({ question, categories, onSubmit }:
 
   const form = (
     <form style={{ height: "100%" }} onSubmit={(e) => {
+      e.preventDefault();
       if (onSubmit) {
-        onSubmit({ description: description, title: title, complexity: complexity, categories: selectedCategories.map(c => { return { name: c } }) });
+        try {
+          onSubmit({ description: description, title: title, complexity: complexity, categories: selectedCategories.map(c => { return { name: c } }) });
+          notifications.show({ message: "Question add/update successful", color: "green", title: "Success" });
+        } catch (error) {
+          console.log(error);
+          notifications.show({message: "Question add/update unsuccessful", color: "red", title: "Fail"});
+        }
       }
     }}>
       <Stack h="100%">
         <Group align="end">
           <TextInput flex="1 1" required value={title} label="Title" onChange={e => setTitle(e.currentTarget.value)} />
           <Select flex="1 1" required data={["Easy", "Medium", "Hard"]} label="Complexity" value={complexity} onChange={e => { if (e && ["Easy", "Medium", "Hard"].includes(e)) setComplexity(e as Complexity) }} />
-          <MultiSelect flex="1 1" required label="Categories" value={selectedCategories} data={availableCategories} onChange={setSelectedCategories}></MultiSelect>
+          <MultiSelect flex="1 1" required label="Categories" value={selectedCategories} data={availableCategories} onChange={setSelectedCategories} ></MultiSelect>
           <Modal opened={opened} onClose={close}>
             <Stack align="center">
               <TextInput flex="1" required label="Category Name" value={newCategory} onChange={e => { setNewCategory(e.currentTarget.value) }} />
-              <Button  onClick={() => {
+              <Button onClick={() => {
                 setAvailableCategories(prev => [...prev, newCategory]);
                 setNewCategory("");
                 close();
@@ -63,7 +71,7 @@ export default function MarkdownQuestionForm({ question, categories, onSubmit }:
   )
 
   return (
-    <PanelGroup direction="horizontal">
+    <PanelGroup autoSaveId="question-form" direction="horizontal">
       <Panel>
         {form}
       </Panel>
