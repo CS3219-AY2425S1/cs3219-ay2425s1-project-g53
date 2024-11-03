@@ -1,13 +1,9 @@
-import { useEffect, useState } from "react";
-import { currentUser, UserWithToken } from '@/actions/user'
+import { currentUser,  verifyCurrentUser } from '@/actions/user'
+import useSWR from "swr";
 
 export const useCurrentUser = () => {
-  const [user, setUser] = useState<UserWithToken | null>(null);
-  useEffect(() => {
-    async function temp() {
-      setUser(await currentUser());
-    }
-    temp();
-  }, [])
-  return user;
+  return useSWR("currentUser", async _ => {
+    const ok = await verifyCurrentUser();
+    return ok ? await currentUser() : null
+  })
 }
