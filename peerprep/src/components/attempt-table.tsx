@@ -1,14 +1,37 @@
 "use client"
 
-import { Attempt } from "@/actions/history"
+import { Attempt, getUserAttempts } from "@/actions/history"
 import { Anchor, Table, Text } from "@mantine/core";
 import Link from "next/link";
 import { UserContext } from "@/lib/contexts";
-import { use } from "react";
+import { use, useContext, useEffect, useState } from "react";
 import { IconDownload } from "@tabler/icons-react";
 
-export default function AttemptTable(props: { attempts: Attempt[] }) {
+export default function AttemptTable() {
   const user = use(UserContext);
+
+    if (!user) {
+        return (
+            <center>Please login to view attempt history.</center>
+        );
+    }
+
+  const [attempts, setAttempts] = useState<Attempt[]>([]);
+
+  useEffect(() => {
+    async function fetchAttempts() {
+        if (user) {
+            try {
+                const userAttempts = await getUserAttempts(user.username);
+                setAttempts(userAttempts);
+            } catch (err) {
+                console.log("Failed to fetch attempts:", err);
+            }
+        }
+    }
+
+    fetchAttempts();
+  }, [user]);
 
   const handleDownload = async (attemptCode: string) => {
     try {
@@ -27,7 +50,7 @@ export default function AttemptTable(props: { attempts: Attempt[] }) {
     }
   };
 
-  const rows = props.attempts.map(q => (
+  const rows = attempts.map(q => (
     <Table.Tr>
       {/* <Table.Td>{q.id}</Table.Td> */}
       {/* <Table.Td>{q.users[0]}</Table.Td> */}
