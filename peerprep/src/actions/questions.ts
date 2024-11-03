@@ -56,7 +56,7 @@ export async function getQuestions(): Promise<Question[]> {
 }
 
 export async function getQuestion(id: number): Promise<Question> {
-  return await fetch(`${API_URL}/questions/id/${id}`)
+  return await fetch(`${API_URL}/questions/id/${id}`, {cache: "no-store"})
     .then(r => checkOk(r))
     .then(r => r.json())
     .then(QuestionSchema.parse);
@@ -81,5 +81,6 @@ export async function addQuestion(question: QuestionAdd): Promise<Question> {
 
 export async function updateQuestion(id: number, question: QuestionAdd): Promise<Question>  {
   const res = await axios.put(`${API_URL}/questions/${id}`, question);
+  revalidatePath("/questions");
   return QuestionSchema.parse(res.data);
 }
