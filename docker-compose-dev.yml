@@ -46,6 +46,13 @@ services:
     ports:
       - "8086:8080"
 
+  history-service:
+    build:
+      context: ./history-service
+      dockerfile: Dockerfile
+    ports:
+      - "8090:8088"
+
   collab-service:
     build:
       context: ./collab-service

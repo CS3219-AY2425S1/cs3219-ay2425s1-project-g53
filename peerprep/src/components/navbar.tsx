@@ -3,7 +3,7 @@
 import { AppShell, NavLink } from "@mantine/core";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { IconHome, IconList, IconSearch, IconSettings } from "@tabler/icons-react";
+import { IconClock, IconHome, IconList, IconSearch, IconSettings } from "@tabler/icons-react";
 import { UserWithToken } from "@/actions/user";
 import { use } from "react";
 import { UserContext } from "@/lib/contexts";
@@ -16,6 +16,7 @@ export default function NavBar() {
     { name: "Home", link: "/", icon: (<IconHome />) },
     { name: "Match Now", link: "/user/match", icon: (<IconSearch />) },
     { name: "Questions", link: "/questions", icon: (<IconList />) },
+    { name: "Attempt History", link: "/history", icon: (<IconClock />) },
     { name: "Settings", link: "/user/settings", icon: (<IconSettings />) },
   ].map(e => (
     <NavLink key={e.link} component={Link} href={e.link} label={e.name} active={currentPath === e.link} leftSection={e.icon} />
