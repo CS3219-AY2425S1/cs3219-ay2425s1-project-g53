@@ -1,23 +1,34 @@
 "use client"
 
+import dynamic from "next/dynamic";
 import { Editor, Monaco, } from "@monaco-editor/react"
 import monaco from "monaco-editor";
 import * as Y from 'yjs'
-import { useEffect, useMemo, useRef, useState } from "react";
+import { use, useEffect, useMemo, useRef, useState } from "react";
 import { MonacoBinding } from "y-monaco";
 import { HocuspocusProvider } from "@hocuspocus/provider";
-import { Select, Stack } from "@mantine/core";
+import { Badge, Select, Stack } from "@mantine/core";
+import Loading from "./loading";
+import { UserContext } from "@/lib/contexts";
+import { Group } from "@mantine/core";
+import { useRouter } from "next/navigation";
 
-export default function CodeEditor() {
+export default function CodeEditor({ sessionName }: { sessionName: string }) {
+  const user = use(UserContext);
+  if (!user) {
+    useRouter().refresh();
+    return <Loading />
+  }
   const ydoc = useMemo(() => new Y.Doc(), []);
-  const provider = useMemo(() => new HocuspocusProvider({ url: "ws://192.168.0.118:5005", name: "monaco-demo-ginloy", document: ydoc }), [ydoc]);
+  const [provider, setProvider] = useState<HocuspocusProvider>();
   const editor = useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
   const binding = useRef<MonacoBinding | null>(null);
   const yMap = useRef<Y.Map<string> | null>(null);
   const [language, setLanguage] = useState<string>("typescript");
+  const [users, setUsers] = useState<string[]>([]);
 
   const languageSelector = (
-    <Select size="xs" label="Select Language" data={["javascript", "typescript", "csharp", "java", "cpp", "rust", "python"]} value={language} onChange={v => {
+    <Select flex={3} size="xs" label="Select Language" data={["javascript", "typescript", "csharp", "java", "cpp", "rust", "python"]} value={language} onChange={v => {
       if (v && yMap.current) {
         yMap.current.set("language", v);
       } else if (v) {
@@ -25,6 +36,47 @@ export default function CodeEditor() {
       }
     }} />
   )
+
+  const header = (
+    <Group w="100%" align="end">
+      {languageSelector}
+      <Group flex={5} justify="flex-end">
+        {users.map(u =>
+          <Badge key={u} color={u === user?.username ? "green" : "red"}>
+            {u}
+          </Badge>)}
+      </Group>
+    </Group>
+  )
+
+  useEffect(() => {
+    console.log("Connection");
+    const p = new HocuspocusProvider({
+      url: `${process.env.NEXT_PUBLIC_COLLAB_WS_URL}/ws/${sessionName}`, name: sessionName, document: ydoc, onClose: () => {
+        console.log("close");
+        binding.current?.destroy();
+        editor.current?.dispose();
+      },
+      onDisconnect(data) {
+        console.log("disconnected");
+        p.connect();
+      },
+      onAwarenessUpdate(states) {
+        setUsers(states.states.map(v => v?.username ?? null).filter(u => u));
+        console.log(users);
+      },
+    });
+    p.setAwarenessField("username", user!.username)
+    setProvider(p);
+    return () => {
+      console.log(p);
+      p.destroy();
+    }
+  }, [ydoc])
+
+  if (!provider) {
+    return <Loading />
+  }
 
   return (
     <>
@@ -52,8 +104,8 @@ export default function CodeEditor() {
                }
           `}
       </style>
-      <Stack h="calc(100vh - 60px)">
-        {languageSelector}
+      <Stack h="100%" w="100%">
+        {header}
         <Editor width="100%" language={language} theme="vs-dark" onMount={(e, m) => {
           editor.current = e;
           const model = e.getModel();

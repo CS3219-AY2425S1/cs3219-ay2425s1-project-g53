@@ -35,7 +35,9 @@ services:
     environment:
       - QUESTION_API_URL=http://fastapi:8080
       - USER_API_URL=http://user-service:3001
-      - NEXT_PUBLIC_MATCH_API_URL=ws://localhost:8086
+      - NEXT_PUBLIC_MATCH_WS_URL=ws://localhost:8086
+      - NEXT_PUBLIC_COLLAB_WS_URL=ws://localhost:3000
+      - COLLAB_API_URL=http://collab-service:3000
 
   matching-service:
     build:
@@ -51,6 +53,13 @@ services:
     ports:
       - "8090:8088"
 
+  collab-service:
+    build:
+      context: ./collab-service
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+
   postgres:
     image: postgres:14
     environment:
@@ -61,6 +70,7 @@ services:
       - postgres_data:/var/lib/postgresql/data
     # ports:
       # - "5433:5432" # No need for this
+
 
 volumes:
   postgres_data:
