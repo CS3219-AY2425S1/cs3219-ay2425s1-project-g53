@@ -1,4 +1,5 @@
 "use server"
+import axios from "axios";
 import { revalidatePath } from "next/cache";
 import { z } from 'zod'
 
@@ -76,4 +77,9 @@ export async function addQuestion(question: QuestionAdd): Promise<Question> {
   revalidatePath("/questions");
 
   return res;
+}
+
+export async function updateQuestion(id: number, question: QuestionAdd): Promise<Question>  {
+  const res = await axios.put(`${API_URL}/questions/${id}`, question);
+  return QuestionSchema.parse(res.data);
 }
