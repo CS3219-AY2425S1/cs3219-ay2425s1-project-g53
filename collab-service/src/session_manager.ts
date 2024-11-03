@@ -49,7 +49,7 @@ export class SessionManager {
     if (this.userMap.has(match.user_1)) {
       const map = this.userMap.get(match.user_1)!;
       for (const session of map.values()) {
-        if (session.users.includes(match.user_2)) {
+        if (session.users.includes(match.user_2) && session.question === match.question_id) {
           return session.name;
         }
       }
