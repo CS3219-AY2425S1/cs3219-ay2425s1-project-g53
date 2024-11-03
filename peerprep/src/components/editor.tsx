@@ -4,10 +4,10 @@ import dynamic from "next/dynamic";
 import { Editor, Monaco, } from "@monaco-editor/react"
 import monaco from "monaco-editor";
 import * as Y from 'yjs'
-import {  useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { MonacoBinding } from "y-monaco";
 import { HocuspocusProvider } from "@hocuspocus/provider";
-import { Avatar, Select, Stack } from "@mantine/core";
+import { Avatar, Select, Stack, Tooltip } from "@mantine/core";
 import Loading from "./loading";
 import { Group } from "@mantine/core";
 import { useRouter } from "next/navigation";
@@ -41,7 +41,9 @@ export default function CodeEditor({ sessionName, user }: { sessionName: string,
       {languageSelector}
       <Group flex={5} justify="flex-end">
         {users.map(u =>
-          <Avatar key={u} name={u} color={u === user?.username ? "green" : "red"} />
+          <Tooltip key={u} label={u}>
+            <Avatar name={u} color={u === user?.username ? "green" : "red"} />
+          </Tooltip>
         )}
       </Group>
     </Group>
