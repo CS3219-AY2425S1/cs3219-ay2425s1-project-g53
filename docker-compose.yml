@@ -29,8 +29,8 @@ services:
     environment:
       - QUESTION_API_URL=http://fastapi:8080
       - USER_API_URL=http://user-service:3001
-      - NEXT_PUBLIC_MATCH_WS_URL=wss://peerprep.ginloy.com/api/match
-      - NEXT_PUBLIC_COLLAB_WS_URL=wss://peerprep.ginloy.com/api/collab
+      - MATCH_WS_URL=wss://peerprep.ginloy.com/api/match
+      - COLLAB_WS_URL=wss://peerprep.ginloy.com/api/collab
       - COLLAB_API_URL=http://collab-service:3000
     networks:
       - caddy
@@ -62,6 +62,9 @@ services:
       dockerfile: Dockerfile
     ports:
       - "3000:3000"
+    networks:
+      - default
+      - caddy
 
   postgres:
     image: postgres:14
