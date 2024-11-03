@@ -1,5 +1,8 @@
 import { getQuestion, Question } from "@/actions/questions";
 import { Text, Divider, Stack, Title, Badge, Group, ScrollArea, Flex, Box } from "@mantine/core";
+import Markdown from 'react-markdown';
+import remarkGfm from "remark-gfm";
+import reactGfm from 'remark-gfm';
 
 export default async function Page({ params }: { params: { id: number } }) {
   const id = params.id;
@@ -17,6 +20,10 @@ export default async function Page({ params }: { params: { id: number } }) {
     }
   })()
 
+  const markdown = (
+    <Markdown remarkPlugins={[remarkGfm]}>{`# ${question.title}\n${question.description}`}</Markdown>
+  )
+
   return (
     <Stack py="md" px="md" h="calc(100vh - 60px)">
       <Group wrap="nowrap">
@@ -31,7 +38,7 @@ export default async function Page({ params }: { params: { id: number } }) {
       </Group>
       <Divider />
       <ScrollArea >
-        <Text style={{ whiteSpace: "pre-wrap" }}>{question.description}</Text>
+        {markdown}
       </ScrollArea>
     </Stack>
   )
