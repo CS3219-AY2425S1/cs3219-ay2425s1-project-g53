@@ -6,9 +6,27 @@ import Link from "next/link";
 import FindMatch from "@/components/find-match";
 import { UserContext } from "@/lib/contexts";
 import { use } from "react";
+import { usePathname, useRouter, useSearchParams } from 'next/navigation'
+import useSWR from "swr";
+import { currentUser, verifyCurrentUser } from "@/actions/user";
+import Loading from "./loading";
 
 export default function QuestionTable(props: { questions: Question[] }) {
-  const user = use(UserContext);
+  const router = useRouter();
+  const path = usePathname();
+  const searchParams = new URLSearchParams({ redirect: path });
+  const { data: user, isLoading } = useSWR("currentUser", async _ => {
+    await verifyCurrentUser();
+    return await currentUser();
+  });
+  if (isLoading) {
+    return <Loading />
+  }
+  if (!user) {
+    router.replace(`/auth/login/?${searchParams}`);
+    return;
+  }
+  // const user = use(UserContext);
 
   const rows = props.questions.map(q => (
     <Table.Tr key={q.id}>
