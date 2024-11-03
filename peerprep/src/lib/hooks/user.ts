@@ -1,4 +1,5 @@
-import { currentUser,  verifyCurrentUser } from '@/actions/user'
+import { getUserSessions } from '@/actions/collab';
+import { currentUser, UserWithToken, verifyCurrentUser } from '@/actions/user'
 import useSWR from "swr";
 
 export const useCurrentUser = () => {
@@ -6,4 +7,8 @@ export const useCurrentUser = () => {
     const ok = await verifyCurrentUser();
     return ok ? await currentUser() : null
   })
+}
+
+export const useSessions = (user: UserWithToken) => {
+  return useSWR(`${user.id}-sessions`, async _ => await getUserSessions(user), { refreshInterval: 1000 });
 }
