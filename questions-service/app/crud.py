@@ -6,23 +6,25 @@ from . import models, schemas
 
 def create_question(db: Session, question: schemas.QuestionCreate) -> models.Question:
     try:
+
+        # Create or retrieve categories
+        categories = []
+        for category in question.categories:
+            try:
+                db_category = read_category_by_name(db, category.name)
+            except Exception as e:
+                db_category = create_category(db, category)
+            categories.append(db_category)
+
         # Create the question model instance
         db_question = models.Question(
             title=question.title,
             description=question.description,
             complexity=question.complexity.value,
+            categories = categories
         )
-
-        # Create or retrieve categories
-        categories = []
-        for category in question.categories:
-            db_category = read_category_by_name(db, category.name)
-            if db_category is None:
-                db_category = create_category(db, category)
-            categories.append(db_category)
-
-        # Associate categories with the question
-        db_question.categories = categories
+        # # Associate categories with the question
+        # db_question.categories = categories
 
         # Add the question to the session and commit the transaction
         db.add(db_question)
@@ -44,6 +46,7 @@ def create_question(db: Session, question: schemas.QuestionCreate) -> models.Que
         raise HTTPException(status_code=500, detail="Database error occurred while creating the question.")
 
     except Exception as e:
+        print(e)
         # Handle any other unexpected errors
         db.rollback()  # Roll back the transaction
         raise HTTPException(status_code=500, detail="An unexpected error occurred while creating the question.")
@@ -210,6 +213,16 @@ def update_question(db: Session, question_id: int, question_update: schemas.Ques
             question.description = question_update.description
         if question_update.complexity is not None:
             question.complexity = question_update.complexity
+        if question_update.categories is not None:
+            categories = []
+            for category in question_update.categories:
+                try:
+                    db_category = read_category_by_name(db, category.name)
+                except Exception as e:
+                    db_category = create_category(db, category)
+                categories.append(db_category)
+            question.categories = categories
+                
 
         # Commit the updates to the database
         db.commit()
