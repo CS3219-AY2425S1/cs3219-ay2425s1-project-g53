@@ -17,7 +17,7 @@ const TIMEOUT = (() => {
 	try {
 		return parseInt(temp);
 	} catch (error) {
-		console.log("Failed to parse ${tmep} to number, using default timeout value");
+		console.log(`Failed to parse ${temp} to number, using default timeout value`);
 		return 60;
 	}
 })();
@@ -34,6 +34,13 @@ const server = Server.configure({
 		console.log(`Load document ${data.documentName}`);
 		return sessionManager.getSession(data.documentName)?.document ?? new Document(data.documentName);
 	},
+	async onAwarenessUpdate(data) {
+      if (data.awareness.states.size === 0) {
+      	sessionManager.deleteSession(data.documentName, TIMEOUT * 1000);
+      } else {
+      	sessionManager.cancelTimeout(data.documentName);
+      }
+  },
 })
 
 app.ws("/ws/:session", (websocket, request, next ) => {

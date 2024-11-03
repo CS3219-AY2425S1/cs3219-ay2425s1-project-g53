@@ -37,10 +37,12 @@ export class Session {
 export class SessionManager {
   private userMap: Map<User, Map<SessionName, Session>>
   private sessionMap: Map<SessionName, Session>
+  private sessionDelete: Map<SessionName, NodeJS.Timeout>
 
   constructor() {
     this.userMap = new Map();
     this.sessionMap = new Map();
+    this.sessionDelete = new Map();
   }
 
   createSession(match: Match): string {
@@ -64,16 +66,33 @@ export class SessionManager {
     return session.name;
   }
 
-  deleteSession(name: SessionName) {
+  deleteSession(name: SessionName, timeout?: number) {
+    if (timeout) {
+      this.cancelTimeout(name);
+      const timer = setTimeout(() => this.deleteSession(name), timeout);
+      this.sessionDelete.set(name, timer);
+      return;
+    }
+    console.log(`Delete session ${name}`);
     const session = this.sessionMap.get(name);
     if (!session) {
       return;
     }
-    for (const user in session.users) {
+    for (const user of session.users) {
       const sessions = this.userMap.get(user)!;
       sessions.delete(session.name);
     }
     this.sessionMap.delete(name);
+  }
+
+  cancelTimeout(name: SessionName) {
+    const timer = this.sessionDelete.get(name);
+    if (!timer) {
+      return;
+    }
+    console.log(`Clear timeout of session ${name}`);
+    clearTimeout(timer);
+    this.sessionDelete.delete(name);
   }
 
   getSession(sessionName: SessionName): Session | undefined {
