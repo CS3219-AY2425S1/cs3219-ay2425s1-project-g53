@@ -16,7 +16,7 @@ export default async function Page({ params }: { params: { id: string } }) {
 
   return (
     <Container h="calc(100vh - 60px)" fluid>
-      <CodeEditor sessionName={sessionName} />
+      <CodeEditor sessionName={sessionName} user={user!} />
     </Container>
   )
 }
