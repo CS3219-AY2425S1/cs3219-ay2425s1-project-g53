@@ -2,6 +2,8 @@
 import { revalidatePath } from "next/cache";
 import { z } from 'zod'
 
+const API_URL = process.env.HISTORY_API_URL;
+
 const AttemptSchema = z.object({
   id: z.string(),
   users: z.array(z.string()),
@@ -22,7 +24,7 @@ async function checkOk(r: Response) {
 }
 
 export async function getUserAttempts(user: string): Promise<Attempt[]> {
-  return await fetch(`http://history-service:8088/fetchUserAttempts/${user}`, {cache: "no-store" })
+  return await fetch(`${API_URL}/fetchUserAttempts/${user}`, {cache: "no-store" })
 .then(checkOk)
 .then((r) => r.json())
 .then((data) => {

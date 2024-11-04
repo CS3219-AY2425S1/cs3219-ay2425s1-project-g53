@@ -38,6 +38,7 @@ services:
       - MATCH_WS_URL=ws://localhost:8086
       - COLLAB_WS_URL=ws://localhost:3000
       - COLLAB_API_URL=http://collab-service:3000
+      - HISTORY_API_URL=http://history-service:8088
 
   matching-service:
     build:
