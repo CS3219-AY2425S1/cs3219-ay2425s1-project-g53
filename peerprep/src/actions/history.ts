@@ -19,6 +19,8 @@ export type Attempt = z.infer<typeof AttemptSchema>
 async function checkOk(r: Response) {
   if (r.ok) {
     return r;
+  } else {
+    console.log(r);
   }
   throw new Error("Non ok response");
 }
