@@ -17,7 +17,7 @@ import useSWR from "swr";
 import ReactMarkdown from 'react-markdown';
 import { runCode, ExecutionResult } from "../actions/execution";
 
-const LANGUAGES = ["javascript", "typescript", "csharp", "java", "cpp", "rust", "python"] as const;
+const LANGUAGES = ["javascript", "typescript", "csharp", "java", "rust", "python"] as const;
 export type Language = typeof LANGUAGES[number];
 
 export default function CodeEditor({ sessionName, user, wsUrl, onRun }: { sessionName: string, user: UserWithToken, wsUrl?: string, onRun?: (v: string, language: Language) => any }) {
