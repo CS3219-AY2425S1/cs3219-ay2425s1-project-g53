@@ -32,7 +32,10 @@ export default async function Page({ params }: { params: { id: string } }) {
 
   const right = (
     <Container fluid px={15} py={0} h="100%">
-      <CodeEditor sessionName={sessionName} user={user!} wsUrl={url} />
+      <CodeEditor sessionName={sessionName} user={user!} wsUrl={url} onRun={async v => {
+        "use server"
+        console.log(v);
+      }} />
     </Container>
   )
 

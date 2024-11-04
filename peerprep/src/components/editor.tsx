@@ -7,13 +7,14 @@ import * as Y from 'yjs'
 import { useEffect, useMemo, useRef, useState } from "react";
 import { MonacoBinding } from "y-monaco";
 import { HocuspocusProvider } from "@hocuspocus/provider";
-import { Avatar, Select, Stack, Tooltip } from "@mantine/core";
+import { Avatar, Button, Select, Stack, Tooltip } from "@mantine/core";
 import Loading from "./loading";
 import { Group } from "@mantine/core";
 import { useRouter } from "next/navigation";
 import { UserWithToken } from "@/actions/user";
+import { IconPlayerPlayFilled } from "@tabler/icons-react";
 
-export default function CodeEditor({ sessionName, user, wsUrl }: { sessionName: string, user: UserWithToken, wsUrl?: string }) {
+export default function CodeEditor({ sessionName, user, wsUrl, onRun }: { sessionName: string, user: UserWithToken, wsUrl?: string, onRun?: (v: string) => any }) {
   if (!user) {
     useRouter().refresh();
     return <Loading />
@@ -45,6 +46,13 @@ export default function CodeEditor({ sessionName, user, wsUrl }: { sessionName: 
             <Avatar name={u} color={u === user?.username ? "green" : "red"} />
           </Tooltip>
         )}
+        <Button onClick={() => {
+          if (editor.current && onRun) {
+            onRun(editor.current.getValue());
+          }
+        }}>
+          {<IconPlayerPlayFilled />}
+        </Button>
       </Group>
     </Group>
   )
@@ -75,7 +83,7 @@ export default function CodeEditor({ sessionName, user, wsUrl }: { sessionName: 
   }, [ydoc])
 
   if (!provider) {
-    return <Loading />
+    return <Loading h="100%" />
   }
 
   return (

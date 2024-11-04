@@ -8,7 +8,7 @@ export function TwoHorizontalPanels({ left, right, persistanceId }: { left: JSX.
   const theme = use(MantineThemeContext);
 
   return (
-    <PanelGroup direction="horizontal">
+    <PanelGroup direction="horizontal" autoSaveId={persistanceId}>
       <Panel>
         {left}
       </Panel>
