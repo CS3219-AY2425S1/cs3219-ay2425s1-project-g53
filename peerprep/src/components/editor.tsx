@@ -14,7 +14,7 @@ import { useRouter } from "next/navigation";
 import { UserWithToken } from "@/actions/user";
 import { IconPlayerPlayFilled } from "@tabler/icons-react";
 
-const LANGUAGES = ["javascript", "typescript", "csharp", "java", "cpp", "rust", "python"] as const;
+const LANGUAGES = ["javascript", "typescript", "csharp", "java", "rust", "python"] as const;
 export type Language = typeof LANGUAGES[number];
 
 export default function CodeEditor({ sessionName, user, wsUrl, onRun }: { sessionName: string, user: UserWithToken, wsUrl?: string, onRun?: (v: string, language: Language) => any }) {
