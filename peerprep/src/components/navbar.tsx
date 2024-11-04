@@ -24,7 +24,7 @@ export default function NavBar() {
 
   return (
     <AppShell.Navbar>
-      {user ? links : links.filter(x => x.key !== "/user/settings").filter(x => x.key !== "/user/history")}
+      {user ? links : links.filter(x => x.key !== "/user/settings" && x.key !== "/user/history")}
     </AppShell.Navbar>
   )
 }
