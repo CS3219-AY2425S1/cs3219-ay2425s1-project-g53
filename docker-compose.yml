@@ -32,6 +32,7 @@ services:
       - MATCH_WS_URL=wss://peerprep.ginloy.com/api/match
       - COLLAB_WS_URL=wss://peerprep.ginloy.com/api/collab
       - COLLAB_API_URL=http://collab-service:3000
+      - HISTORY_API_URL=http://history-service:8088
     networks:
       - caddy
       - default
@@ -52,6 +53,16 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8086:8080"
+    networks:
+      - default
+      - caddy
+
+  history-service:
+    build:
+      context: ./history-service
+      dockerfile: Dockerfile
+    ports:
+      - "8090:8088"
     networks:
       - default
       - caddy
