@@ -16,13 +16,16 @@ export default function Home() {
         <Link href="/questions">
           <Button w="100%">Question List</Button>
         </Link>
-        <Link href="/history">
-          <Button w="100%">Attempt History</Button>
-        </Link>
         {user ?
-          <Button onClick={e => logout()}>
-            Log Out
-          </Button> :
+          <Stack>
+            <Link href="/user/history">
+              <Button w="100%">Attempt History</Button>
+            </Link>
+            <Button onClick={e => logout()}>
+              Log Out
+            </Button>
+          </Stack>
+            :
           <>
             <Link href="/auth/login">
               <Button w="100%">Log In</Button>

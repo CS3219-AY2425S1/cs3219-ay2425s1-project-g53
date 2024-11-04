@@ -16,7 +16,7 @@ export default function NavBar() {
     { name: "Home", link: "/", icon: (<IconHome />) },
     { name: "Match Now", link: "/user/match", icon: (<IconSearch />) },
     { name: "Questions", link: "/questions", icon: (<IconList />) },
-    { name: "Attempt History", link: "/history", icon: (<IconClock />) },
+    { name: "Attempt History", link: "/user/history", icon: (<IconClock />) },
     { name: "Settings", link: "/user/settings", icon: (<IconSettings />) },
   ].map(e => (
     <NavLink key={e.link} component={Link} href={e.link} label={e.name} active={currentPath === e.link} leftSection={e.icon} />
@@ -24,7 +24,7 @@ export default function NavBar() {
 
   return (
     <AppShell.Navbar>
-      {user ? links : links.filter(x => x.key !== "/user/settings")}
+      {user ? links : links.filter(x => x.key !== "/user/settings").filter(x => x.key !== "/user/history")}
     </AppShell.Navbar>
   )
 }
