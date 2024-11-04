@@ -7,12 +7,15 @@ import * as Y from 'yjs'
 import { useEffect, useMemo, useRef, useState } from "react";
 import { MonacoBinding } from "y-monaco";
 import { HocuspocusProvider } from "@hocuspocus/provider";
-import { Avatar, Button, Select, Stack, Tooltip } from "@mantine/core";
+import { Avatar, Button, Select, Stack, Tooltip, Box } from "@mantine/core";
 import Loading from "./loading";
 import { Group } from "@mantine/core";
 import { useRouter } from "next/navigation";
 import { UserWithToken } from "@/actions/user";
 import { IconPlayerPlayFilled } from "@tabler/icons-react";
+import useSWR from "swr";
+import ReactMarkdown from 'react-markdown';
+import { runCode, ExecutionResult } from "../actions/execution";
 
 const LANGUAGES = ["javascript", "typescript", "csharp", "java", "cpp", "rust", "python"] as const;
 export type Language = typeof LANGUAGES[number];
@@ -28,7 +31,25 @@ export default function CodeEditor({ sessionName, user, wsUrl, onRun }: { sessio
   const binding = useRef<MonacoBinding | null>(null);
   const yMap = useRef<Y.Map<string> | null>(null);
   const [language, setLanguage] = useState<Language>("typescript");
+  const [output, setOutput] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [users, setUsers] = useState<string[]>([]);
+
+  const handleRun = async (code: string) => {
+    try {
+      const result: ExecutionResult = await runCode(language, code);
+      if (result.run.stdout) {
+        setOutput(result.run.stdout);
+        setError(null);
+      } else if (result.run.stderr) {
+        setError(result.run.stderr);
+        setOutput(null);
+      }
+    } catch (err) {
+      setError("Execution failed.");
+      setOutput(null);
+    }
+  };
 
   const languageSelector = (
     <Select flex={3} size="xs" label="Select Language" data={LANGUAGES} value={language} onChange={v => {
@@ -49,12 +70,8 @@ export default function CodeEditor({ sessionName, user, wsUrl, onRun }: { sessio
             <Avatar name={u} color={u === user?.username ? "green" : "red"} />
           </Tooltip>
         )}
-        <Button onClick={() => {
-          if (editor.current && onRun) {
-            onRun(editor.current.getValue(), language);
-          }
-        }}>
-          {<IconPlayerPlayFilled />}
+        <Button onClick={() => handleRun(editor.current?.getValue() || "")}>
+          <IconPlayerPlayFilled />
         </Button>
       </Group>
     </Group>
@@ -140,6 +157,10 @@ export default function CodeEditor({ sessionName, user, wsUrl, onRun }: { sessio
             });
           }}
         />
+      <Box style={{ marginTop: "20px", padding: "10px", border: "1px solid #ccc", borderRadius: "5px", backgroundColor: "#f9f9f9" }}>
+        {error && <div style={{ color: "red" }}>{error}</div>}
+        {output && <ReactMarkdown>{output}</ReactMarkdown>}
+      </Box>
       </Stack>
     </>)
 }
