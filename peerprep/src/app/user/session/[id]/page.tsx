@@ -4,6 +4,7 @@ import { getQuestion } from '@/actions/questions';
 import { getCollabWsUrl } from '@/actions/url';
 import { currentUser } from '@/actions/user';
 import CodeEditor from '@/components/editor';
+import Loading from '@/components/loading';
 import { TwoHorizontalPanels } from '@/components/panels';
 import QuestionDisplay from '@/components/question';
 import { Container } from '@mantine/core';
@@ -15,7 +16,7 @@ export default async function Page({ params }: { params: { id: string } }) {
   const user = await currentUser();
 
   if (!user) {
-
+    return <Loading />
   }
   const userSessions = await getUserSessions(user!);
   const sessionName = params.id;
@@ -33,7 +34,7 @@ export default async function Page({ params }: { params: { id: string } }) {
 
   const right = (
     <Container fluid px={15} py={0} h="100%">
-      <CodeEditor sessionName={sessionName} user={user!} wsUrl={url} onRun={async (v, l) => {
+      <CodeEditor sessionName={sessionName} user={user} wsUrl={url} question={question} onRun={async (v, l) => {
         "use server"
         const res = await runCode(l,v);
         if (res.compile) {

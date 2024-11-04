@@ -17,11 +17,13 @@ import useSWRMutation from "swr/mutation";
 import ReactMarkdown from 'react-markdown';
 import { runCode, ExecutionResult } from "../actions/execution";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
+import { addAttempt } from "@/actions/history";
+import { Question } from "@/actions/questions";
 
 const LANGUAGES = ["javascript", "typescript", "csharp", "java", "rust", "python"] as const;
 export type Language = typeof LANGUAGES[number];
 
-export default function CodeEditor({ sessionName, user, wsUrl, onRun }: { sessionName: string, user: UserWithToken, wsUrl?: string, onRun?: (v: string, language: Language) => any }) {
+export default function CodeEditor({ sessionName, user, wsUrl, onRun, question }: { sessionName: string, user: UserWithToken, wsUrl?: string, onRun?: (v: string, language: Language) => any, question: Question }) {
   if (!user) {
     useRouter().refresh();
     return <Loading />
@@ -34,9 +36,27 @@ export default function CodeEditor({ sessionName, user, wsUrl, onRun }: { sessio
   const yMap = useRef<Y.Map<string> | null>(null);
   const [language, setLanguage] = useState<Language>("typescript");
   const [users, setUsers] = useState<string[]>([]);
+  const [otherUserTriggered, setOtherUserTriggered] = useState(false);
 
-  const { trigger, isMutating, data, reset, error } = useSWRMutation("runCode", async (k, { arg }: { arg: { code: string, language: Language } }) => {
-    return await runCode(arg.language, arg.code);
+  const { trigger, isMutating, data, reset, error } = useSWRMutation("runCode", async (k, { arg }: { arg: { code: string, language: Language, emit: boolean } }) => {
+    if (!arg.emit && yMap.current) {
+      const res = JSON.parse(yMap.current.get("output")!) as ExecutionResult;
+      yMap.current.delete("run");
+      yMap.current.delete("output");
+      return res;
+    }
+    if (users.length > 2) {
+      console.log("Adding attempt");
+      await addAttempt(users[0], users[1], question, arg.code);
+    }
+    if (yMap.current && arg.emit) {
+      yMap.current.set("run", "true");
+    }
+    const res = await runCode(arg.language, arg.code);
+    if (yMap.current && arg.emit) {
+      yMap.current.set("output", JSON.stringify(res));
+    }
+    return res;
   })
 
   const languageSelector = (
@@ -59,7 +79,7 @@ export default function CodeEditor({ sessionName, user, wsUrl, onRun }: { sessio
           </Tooltip>
         )}
         <Button onClick={() =>
-          trigger({ language: language, code: editor.current?.getValue() || "" })} loading={isMutating}>
+          trigger({ language: language, code: editor.current?.getValue() || "", emit: true })} loading={isMutating || otherUserTriggered}>
           <IconPlayerPlayFilled />
         </Button>
       </Group>
@@ -125,7 +145,7 @@ export default function CodeEditor({ sessionName, user, wsUrl, onRun }: { sessio
         <Panel>
           <Stack h="100%" p={10} >
             {header}
-            <Box flex="1 1 auto">
+            <Box flex="1 1 auto" h={0}>
               <Editor width="100%" language={language} theme="vs-dark" onMount={(e, m) => {
                 editor.current = e;
                 const model = e.getModel();
@@ -139,6 +159,14 @@ export default function CodeEditor({ sessionName, user, wsUrl, onRun }: { sessio
                 map.observe(e => {
                   const temp = map.get("language");
                   if (temp) setLanguage(temp as Language);
+                  if (map.get("run") === "true") {
+                    setOtherUserTriggered(true);
+                  } else {
+                    setOtherUserTriggered(false);
+                  }
+                  if (map.has("output") && editor.current) {
+                    trigger({ code: editor.current.getValue(), language: language, emit: false });
+                  }
                 })
 
                 yMap.current = map;
@@ -157,9 +185,9 @@ export default function CodeEditor({ sessionName, user, wsUrl, onRun }: { sessio
           <ScrollArea h={0} m={10} flex="1 1 auto" bg={theme?.colors.gray[9]} c={error || data?.run.code == null || data.run.code !== 0 || (data?.compile?.code != null && data.compile.code !== 0) ? "red" : "green"}>
             <Stack h="100%" p={5}>
               {(data?.compile?.code != null && data.compile.code !== 0) && <Title order={3}>Compilation Error</Title>}
-              {(data?.run.code != null && data.run.code !== 0) && <Title order={3}>Output Error</Title>}
+              {(data?.run.code != null && data.run.code !== 0) && <Title order={3}>Runtime Error</Title>}
               {(data?.run.code != null && data.run.code === 0) && <Title order={3}>Success</Title>}
-              <ReactMarkdown>{`\`\`\`\n${error ?? (data?.compile?.code != null && data.compile.code !== 0 ? data.compile.output : data?.run.output)}\n\`\`\``}</ReactMarkdown>
+              <ReactMarkdown>{`\`\`\`\n${error ?? (data?.compile?.code != null && data.compile.code !== 0 ? data.compile.output : data?.run.output ?? "")}\n\`\`\``}</ReactMarkdown>
             </Stack>
           </ScrollArea>
         </Panel>
