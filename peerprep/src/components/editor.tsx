@@ -13,7 +13,7 @@ import { Group } from "@mantine/core";
 import { useRouter } from "next/navigation";
 import { UserWithToken } from "@/actions/user";
 
-export default function CodeEditor({ sessionName, user }: { sessionName: string, user: UserWithToken }) {
+export default function CodeEditor({ sessionName, user, wsUrl }: { sessionName: string, user: UserWithToken, wsUrl?: string }) {
   if (!user) {
     useRouter().refresh();
     return <Loading />
@@ -52,7 +52,7 @@ export default function CodeEditor({ sessionName, user }: { sessionName: string,
   useEffect(() => {
     console.log("Connection");
     const p = new HocuspocusProvider({
-      url: `${process.env.NEXT_PUBLIC_COLLAB_WS_URL}/ws/${sessionName}`, name: sessionName, document: ydoc, onClose: () => {
+      url: `${wsUrl}/ws/${sessionName}`, name: sessionName, document: ydoc, onClose: () => {
         console.log("close");
         binding.current?.destroy();
         editor.current?.dispose();

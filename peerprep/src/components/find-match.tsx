@@ -10,6 +10,7 @@ import { z } from 'zod';
 import { notifications } from '@mantine/notifications';
 import { MatchSchema, Match } from '@/lib/schemas';
 import { createSession } from '@/actions/collab'
+import { getMatchWsUrl } from '@/actions/url';
 
 export default function FindMatch({ questionId, user }: { questionId: number, user: UserWithToken }) {
   const router = useRouter();
@@ -29,10 +30,9 @@ export default function FindMatch({ questionId, user }: { questionId: number, us
     setIsLoading(true);
     const user_id = user.id;
     const question_id = questionId;
+    const url = await getMatchWsUrl();
 
-    let socketUrl = new URL(`${process.env.NEXT_PUBLIC_MATCH_WS_URL}/ws/${user_id}`);
-
-    const ws = new WebSocket(socketUrl);
+    const ws = new WebSocket(`${url}/ws/${user_id}`);
 
     // Store the WebSocket instance in state
     socket.current = ws;
