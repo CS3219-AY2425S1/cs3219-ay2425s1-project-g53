@@ -56,6 +56,16 @@ services:
       - default
       - caddy
 
+  history-service:
+    build:
+      context: ./history-service
+      dockerfile: Dockerfile
+    ports:
+      - "8090:8088"
+    networks:
+      - default
+      - caddy
+
   collab-service:
     build:
       context: ./collab-service
