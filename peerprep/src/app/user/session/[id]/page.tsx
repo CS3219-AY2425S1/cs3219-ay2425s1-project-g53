@@ -1,4 +1,5 @@
 import { getUserSessions } from '@/actions/collab';
+import { runCode } from '@/actions/execution';
 import { getQuestion } from '@/actions/questions';
 import { getCollabWsUrl } from '@/actions/url';
 import { currentUser } from '@/actions/user';
@@ -32,9 +33,16 @@ export default async function Page({ params }: { params: { id: string } }) {
 
   const right = (
     <Container fluid px={15} py={0} h="100%">
-      <CodeEditor sessionName={sessionName} user={user!} wsUrl={url} onRun={async v => {
+      <CodeEditor sessionName={sessionName} user={user!} wsUrl={url} onRun={async (v, l) => {
         "use server"
-        console.log(v);
+        const res = await runCode(l,v);
+        if (res.compile) {
+          console.log("Compilation:");
+          console.log(res.compile.output);
+        }
+        console.log("Output:")
+        console.log(res.run.output);
+        // console.log(await runCode(l, v));
       }} />
     </Container>
   )

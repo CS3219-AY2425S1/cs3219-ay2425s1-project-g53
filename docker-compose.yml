@@ -33,6 +33,7 @@ services:
       - COLLAB_WS_URL=wss://peerprep.ginloy.com/api/collab
       - COLLAB_API_URL=http://collab-service:3000
       - HISTORY_API_URL=http://history-service:8088
+      - EXECUTION_API_URL=http://code-execution-service:4000
     networks:
       - caddy
       - default
@@ -81,8 +82,6 @@ services:
     build:
       context: ./code-execution-service
       dockerfile: Dockerfile
-    environment:
-      - PISTON_SERVER_URL=https://your-piston-server.com  # Replace with your actual URL
     networks:
       - default
 

@@ -14,7 +14,10 @@ import { useRouter } from "next/navigation";
 import { UserWithToken } from "@/actions/user";
 import { IconPlayerPlayFilled } from "@tabler/icons-react";
 
-export default function CodeEditor({ sessionName, user, wsUrl, onRun }: { sessionName: string, user: UserWithToken, wsUrl?: string, onRun?: (v: string) => any }) {
+const LANGUAGES = ["javascript", "typescript", "csharp", "java", "cpp", "rust", "python"] as const;
+export type Language = typeof LANGUAGES[number];
+
+export default function CodeEditor({ sessionName, user, wsUrl, onRun }: { sessionName: string, user: UserWithToken, wsUrl?: string, onRun?: (v: string, language: Language) => any }) {
   if (!user) {
     useRouter().refresh();
     return <Loading />
@@ -24,15 +27,15 @@ export default function CodeEditor({ sessionName, user, wsUrl, onRun }: { sessio
   const editor = useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
   const binding = useRef<MonacoBinding | null>(null);
   const yMap = useRef<Y.Map<string> | null>(null);
-  const [language, setLanguage] = useState<string>("typescript");
+  const [language, setLanguage] = useState<Language>("typescript");
   const [users, setUsers] = useState<string[]>([]);
 
   const languageSelector = (
-    <Select flex={3} size="xs" label="Select Language" data={["javascript", "typescript", "csharp", "java", "cpp", "rust", "python"]} value={language} onChange={v => {
+    <Select flex={3} size="xs" label="Select Language" data={LANGUAGES} value={language} onChange={v => {
       if (v && yMap.current) {
         yMap.current.set("language", v);
       } else if (v) {
-        setLanguage(v);
+        setLanguage(v as Language);
       }
     }} />
   )
@@ -48,7 +51,7 @@ export default function CodeEditor({ sessionName, user, wsUrl, onRun }: { sessio
         )}
         <Button onClick={() => {
           if (editor.current && onRun) {
-            onRun(editor.current.getValue());
+            onRun(editor.current.getValue(), language);
           }
         }}>
           {<IconPlayerPlayFilled />}
@@ -126,7 +129,7 @@ export default function CodeEditor({ sessionName, user, wsUrl, onRun }: { sessio
           map.set("language", language);
           map.observe(e => {
             const temp = map.get("language");
-            if (temp) setLanguage(temp);
+            if (temp) setLanguage(temp as Language);
           })
 
           yMap.current = map;
