@@ -56,8 +56,7 @@ export default function AttemptTable() {
       {/* <Table.Td>{q.users[0]}</Table.Td> */}
       <Table.Td>{q.users[1]}</Table.Td>
       <Table.Td>{q.problem}</Table.Td>
-      <Table.Td>{q.attemptStart}</Table.Td>
-      <Table.Td>{q.attemptEnd}</Table.Td>
+      <Table.Td>{q.createdAt}</Table.Td>
       <Table.Td>
         <span
           onClick={() => handleDownload(q.attemptCode)}
@@ -74,8 +73,7 @@ export default function AttemptTable() {
             {/* <Table.Th>user1</Table.Th> */}
             <Table.Th>Partner</Table.Th>
             <Table.Th>Problem</Table.Th>
-            <Table.Th>Attempt Start</Table.Th>
-            <Table.Th>Attempt End</Table.Th>
+            <Table.Th>Attempt Time</Table.Th>
             <Table.Th>View Saved Attempt</Table.Th>
         </Table.Tr>
     </Table.Thead>)

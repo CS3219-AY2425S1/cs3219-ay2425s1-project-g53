@@ -45,7 +45,7 @@ export default function CodeEditor({ sessionName, user, wsUrl, onRun, question }
       yMap.current.delete("output");
       return res;
     }
-    if (users.length > 2) {
+    if (users.length >= 2) {
       console.log("Adding attempt");
       await addAttempt(users[0], users[1], question, arg.code);
     }
