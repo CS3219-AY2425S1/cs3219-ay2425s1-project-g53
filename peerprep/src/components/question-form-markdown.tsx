@@ -27,7 +27,7 @@ export default function MarkdownQuestionForm({ question, categories, onSubmit }:
   )
 
   const display = (
-    <ScrollArea h="100%" scrollbars="y">
+    <ScrollArea h="100%">
       <Markdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]} components={{
         code(props) {
           return <Code {...props} />
