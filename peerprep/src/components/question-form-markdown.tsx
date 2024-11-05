@@ -1,7 +1,7 @@
 "use client"
 
 import { Category, Complexity, Question, QuestionAdd } from "@/actions/questions";
-import { Group, TextInput, Stack, Select, MultiSelect, Button, Space, ScrollArea, MantineThemeContext, Modal } from "@mantine/core";
+import { Group, TextInput, Stack, Select, MultiSelect, Button, Space, ScrollArea, MantineThemeContext, Modal, Code } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
 import { Editor } from "@monaco-editor/react";
@@ -9,6 +9,8 @@ import { use, useState } from "react";
 import Markdown from "react-markdown";
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels'
 import remarkGfm from "remark-gfm";
+import remarkMath from "remark-math";
+import rehypeKatex from "rehype-katex";
 
 export default function MarkdownQuestionForm({ question, categories, onSubmit }: { question?: Question, categories: Category[], onSubmit?: (q: QuestionAdd) => void }) {
   const theme = use(MantineThemeContext);
@@ -26,9 +28,11 @@ export default function MarkdownQuestionForm({ question, categories, onSubmit }:
 
   const display = (
     <ScrollArea h="100%" scrollbars="y">
-      <Markdown remarkPlugins={[remarkGfm]}>
-        {`# ${title}\n${description}`}
-      </Markdown>
+      <Markdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]} components={{
+        code(props) {
+          return <Code {...props} />
+        }
+      }}>{`# ${title}\n${description}`}</Markdown>
     </ScrollArea>
   )
 
@@ -41,7 +45,7 @@ export default function MarkdownQuestionForm({ question, categories, onSubmit }:
           notifications.show({ message: "Question add/update successful", color: "green", title: "Success" });
         } catch (error) {
           console.log(error);
-          notifications.show({message: "Question add/update unsuccessful", color: "red", title: "Fail"});
+          notifications.show({ message: "Question add/update unsuccessful", color: "red", title: "Fail" });
         }
       }
     }}>

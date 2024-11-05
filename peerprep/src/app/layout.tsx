@@ -28,12 +28,13 @@ export default async function RootLayout({
     <html lang="en">
       <head>
         <ColorSchemeScript defaultColorScheme="dark" />
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css" />
       </head>
       <body>
-          <MantineProvider defaultColorScheme="dark">
-            <Notifications />
-            <Shell children={children} user={user} />
-          </MantineProvider>
+        <MantineProvider defaultColorScheme="dark">
+          <Notifications />
+          <Shell children={children} user={user} />
+        </MantineProvider>
       </body>
     </html>
   );

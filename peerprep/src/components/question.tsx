@@ -1,7 +1,9 @@
 import { Question } from "@/actions/questions";
-import { Divider, Stack, Badge, Group, ScrollArea, Box, StackProps } from "@mantine/core";
+import { Divider, Stack, Badge, Group, ScrollArea, Box, StackProps, Code } from "@mantine/core";
 import Markdown from 'react-markdown';
+import rehypeKatex from "rehype-katex";
 import remarkGfm from "remark-gfm";
+import remarkMath from 'remark-math'
 
 export default function QuestionDisplay({ question, ...stackProps }: { question: Question} & StackProps) {
 
@@ -17,7 +19,11 @@ export default function QuestionDisplay({ question, ...stackProps }: { question:
   })()
 
   const markdown = (
-    <Markdown  remarkPlugins={[remarkGfm]}>{`# ${question.title}\n${question.description}`}</Markdown>
+    <Markdown  remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]} components={{
+      code(props){
+        return <Code {...props}/>
+      }
+    }}>{`# ${question.title}\n${question.description}`}</Markdown>
   )
 
   return (
