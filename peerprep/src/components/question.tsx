@@ -1,5 +1,5 @@
 import { Question } from "@/actions/questions";
-import { Divider, Stack, Badge, Group, ScrollArea, StackProps, Code } from "@mantine/core";
+import { Divider, Stack, Badge, Group, ScrollArea, StackProps, Code, TypographyStylesProvider } from "@mantine/core";
 import React from "react";
 import { Children } from "react";
 import Markdown from 'react-markdown';
@@ -8,21 +8,22 @@ import remarkGfm from "remark-gfm";
 import remarkMath from 'remark-math'
 
 export function CustomMarkdown({ children }: Readonly<{ children?: string }>) {
-  return <Markdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]} components={{
-    code(props) {
-      return <Code {...props} />
-    },
-    pre(props) {
-      const code = Children.toArray(props.children).find(n => {
-        return React.isValidElement(n) && n.props.node.tagName === 'code'
-      });
-      if (React.isValidElement(code)) {
-        return <Code block {...code.props} />
-      }
-      return <pre {...props} />
-    }
-  }}
-    children={children} />
+  return (
+    <TypographyStylesProvider>
+      <Markdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]} children={children} components={{
+        pre(props) {
+          const code = Children.toArray(props.children).find(n => {
+            console.log(n);
+            return React.isValidElement(n) && n.type === (<code/>).type;
+          });
+          if (React.isValidElement(code)) {
+            return <Code block {...code.props} />
+          }
+          return <pre {...props} />
+        }
+      }} />
+    </TypographyStylesProvider>
+  )
 
 }
 
