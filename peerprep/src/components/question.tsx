@@ -1,5 +1,5 @@
 import { Question } from "@/actions/questions";
-import { Divider, Stack, Badge, Group, ScrollArea, StackProps, Code, Blockquote } from "@mantine/core";
+import { Divider, Stack, Badge, Group, ScrollArea, StackProps, Code } from "@mantine/core";
 import React from "react";
 import { Children } from "react";
 import Markdown from 'react-markdown';
@@ -20,9 +20,6 @@ export function CustomMarkdown({ children }: Readonly<{ children?: string }>) {
         return <Code block {...code.props} />
       }
       return <pre {...props} />
-    },
-    blockquote(props) {
-      return <Blockquote {...props}/>
     }
   }}
     children={children} />
