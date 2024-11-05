@@ -5,12 +5,14 @@ import { Group, TextInput, Stack, Select, MultiSelect, Button, Space, ScrollArea
 import { useDisclosure } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
 import { Editor } from "@monaco-editor/react";
-import { use, useState } from "react";
+import { Children, use, useState } from "react";
 import Markdown from "react-markdown";
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels'
 import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
+import React from "react";
+import { CustomMarkdown } from "./question";
 
 export default function MarkdownQuestionForm({ question, categories, onSubmit }: { question?: Question, categories: Category[], onSubmit?: (q: QuestionAdd) => void }) {
   const theme = use(MantineThemeContext);
@@ -28,11 +30,7 @@ export default function MarkdownQuestionForm({ question, categories, onSubmit }:
 
   const display = (
     <ScrollArea h="100%">
-      <Markdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]} components={{
-        code(props) {
-          return <Code {...props} />
-        }
-      }}>{`# ${title}\n${description}`}</Markdown>
+      <CustomMarkdown>{`# ${title}\n${description}`}</CustomMarkdown>
     </ScrollArea>
   )
 

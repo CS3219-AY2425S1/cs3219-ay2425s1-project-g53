@@ -1,11 +1,32 @@
 import { Question } from "@/actions/questions";
-import { Divider, Stack, Badge, Group, ScrollArea, Box, StackProps, Code } from "@mantine/core";
+import { Divider, Stack, Badge, Group, ScrollArea, StackProps, Code } from "@mantine/core";
+import React from "react";
+import { Children } from "react";
 import Markdown from 'react-markdown';
 import rehypeKatex from "rehype-katex";
 import remarkGfm from "remark-gfm";
 import remarkMath from 'remark-math'
 
-export default function QuestionDisplay({ question, ...stackProps }: { question: Question} & StackProps) {
+export function CustomMarkdown({ children }: Readonly<{ children?: string }>) {
+  return <Markdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]} components={{
+    code(props) {
+      return <Code {...props} />
+    },
+    pre(props) {
+      const code = Children.toArray(props.children).find(n => {
+        return React.isValidElement(n) && n.props.node.tagName === 'code'
+      });
+      if (React.isValidElement(code)) {
+        return <Code block {...code.props} />
+      }
+      return <pre {...props} />
+    }
+  }}
+    children={children} />
+
+}
+
+export default function QuestionDisplay({ question, ...stackProps }: { question: Question } & StackProps) {
 
   const difficultyBadgeColor = (() => {
     switch (question.complexity) {
@@ -19,11 +40,7 @@ export default function QuestionDisplay({ question, ...stackProps }: { question:
   })()
 
   const markdown = (
-    <Markdown  remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]} components={{
-      code(props){
-        return <Code {...props}/>
-      }
-    }}>{`# ${question.title}\n${question.description}`}</Markdown>
+    <CustomMarkdown >{`# ${question.title}\n${question.description}`}</CustomMarkdown>
   )
 
   return (
