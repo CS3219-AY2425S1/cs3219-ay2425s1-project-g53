@@ -39,6 +39,7 @@ services:
       - COLLAB_WS_URL=ws://localhost:3000
       - COLLAB_API_URL=http://collab-service:3000
       - HISTORY_API_URL=http://history-service:8088
+      - EXECUTION_API_URL=http://code-execution-service:4000
 
   matching-service:
     build:
@@ -46,6 +47,13 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8086:8080"
+
+  code-execution-service:
+    build:
+      context: ./code-execution-service
+      dockerfile: Dockerfile
+    networks:
+      - default
 
   history-service:
     build:
