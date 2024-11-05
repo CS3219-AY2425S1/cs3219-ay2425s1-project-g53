@@ -4,13 +4,11 @@ import dynamic from "next/dynamic";
 import { Editor, Monaco, } from "@monaco-editor/react"
 import monaco from "monaco-editor";
 import * as Y from 'yjs'
-import { use, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { MonacoBinding } from "y-monaco";
 import { HocuspocusProvider } from "@hocuspocus/provider";
-import { Avatar, Button, Select, Stack, Tooltip, Box, ScrollArea, MantineThemeContext, Title } from "@mantine/core";
-import Loading from "./loading";
+import { Avatar, Button, Select, Stack, Tooltip, Box, ScrollArea, Title, useMantineTheme } from "@mantine/core";
 import { Group } from "@mantine/core";
-import { useRouter } from "next/navigation";
 import { UserWithToken } from "@/actions/user";
 import { IconPlayerPlayFilled } from "@tabler/icons-react";
 import useSWRMutation from "swr/mutation";
@@ -19,51 +17,171 @@ import { runCode, ExecutionResult } from "../actions/execution";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import { addAttempt } from "@/actions/history";
 import { Question } from "@/actions/questions";
+import { z } from 'zod';
+import { ExecutionResultSchema } from "@/lib/schemas";
 
 const LANGUAGES = ["javascript", "typescript", "csharp", "java", "rust", "python"] as const;
 export type Language = typeof LANGUAGES[number];
 
-export default function CodeEditor({ sessionName, user, wsUrl, onRun, question }: { sessionName: string, user: UserWithToken, wsUrl?: string, onRun?: (v: string, language: Language) => any, question: Question }) {
-  if (!user) {
-    useRouter().refresh();
-    return <Loading />
-  }
-  const theme = use(MantineThemeContext);
-  const ydoc = useMemo(() => new Y.Doc(), []);
-  const [provider, setProvider] = useState<HocuspocusProvider>();
-  const editor = useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
-  const binding = useRef<MonacoBinding | null>(null);
-  const yMap = useRef<Y.Map<string> | null>(null);
-  const [language, setLanguage] = useState<Language>("typescript");
-  const [users, setUsers] = useState<string[]>([]);
-  const [otherUserTriggered, setOtherUserTriggered] = useState(false);
+const OutputEventSchema = z.object({
+  _tag: z.literal("output"),
+  data: ExecutionResultSchema
+});
 
-  const { trigger, isMutating, data, reset, error } = useSWRMutation("runCode", async (k, { arg }: { arg: { code: string, language: Language, emit: boolean } }) => {
-    if (!arg.emit && yMap.current) {
-      const res = JSON.parse(yMap.current.get("output")!) as ExecutionResult;
-      yMap.current.delete("run");
-      yMap.current.delete("output");
+const RunEventSchema = z.object({
+  _tag: z.literal("run")
+});
+
+const RunErrorSchema = z.object({
+  _tag: z.literal("runError"),
+  error: z.any()
+})
+
+const AcceptLanguageChangeEventSchema = z.object({
+  _tag: z.literal("acceptLang"),
+  lang: z.enum(LANGUAGES),
+});
+const RequestLanguageChangeEventSchema = z.object({
+  _tag: z.literal("changeLang"),
+  lang: z.enum(LANGUAGES),
+});
+
+const ProviderEventSchema = z.discriminatedUnion("_tag", [OutputEventSchema, RunEventSchema, AcceptLanguageChangeEventSchema, RunErrorSchema, RequestLanguageChangeEventSchema]).and(z.object({ source: z.string() }));
+export type ProviderEvent = z.infer<typeof ProviderEventSchema>;
+
+export function CodeEditor({ sessionName, user, wsUrl, onRun, question }: { sessionName: string, user: UserWithToken, wsUrl?: string, onRun?: (v: string, language: Language) => any, question: Question }) {
+  const theme = useMantineTheme();
+  const [users, setUsers] = useState<string[]>([]);
+  const [connected, setConnected] = useState(false);
+  const [language, setLanguage] = useState<Language>("typescript");
+  const [otherUserTriggered, setOtherUserTriggered] = useState(false);
+  const [editor, setEditor] = useState<monaco.editor.IStandaloneCodeEditor | null>(null);
+
+  const configRef = useRef<Y.Map<string> | null>(null);
+  const provider = useRef<HocuspocusProvider | null>(null);
+
+  const { trigger, isMutating, data, reset, error } = useSWRMutation("runCode", async (k, { arg }: { arg: { code: string, language: Language, set?: ExecutionResult } }) => {
+    if (arg.set) {
+      return arg.set;
+    }
+    if (provider.current && provider.current.isConnected) {
+      const payload: ProviderEvent = {
+        _tag: "run",
+        source: user.id,
+      }
+      provider.current.sendStateless(JSON.stringify(payload));
+    }
+    try {
+      const res = await runCode(arg.language, arg.code);
+      if (provider.current && provider.current.isConnected) {
+        const payload: ProviderEvent = {
+          _tag: "output",
+          data: res,
+          source: user.id
+        }
+        provider.current.sendStateless(JSON.stringify(payload));
+      }
+      if (users.length >= 2) {
+        console.log("Adding attempt");
+        await addAttempt(users[0], users[1], question, arg.code);
+      }
       return res;
+    } catch (error) {
+      const payload: ProviderEvent = {
+        _tag: "runError",
+        error: error,
+        source: user.id
+      };
+      provider.current?.sendStateless(JSON.stringify(payload))
     }
-    if (users.length >= 2) {
-      console.log("Adding attempt");
-      await addAttempt(users[0], users[1], question, arg.code);
-    }
-    if (yMap.current && arg.emit) {
-      yMap.current.set("run", "true");
-    }
-    const res = await runCode(arg.language, arg.code);
-    if (yMap.current && arg.emit) {
-      yMap.current.set("output", JSON.stringify(res));
-    }
-    return res;
   })
+
+  useEffect(() => {
+    if (!editor || !editor.getModel()) {
+      console.log("Editor not mounted");
+      return;
+    }
+    const ydoc = new Y.Doc();
+    const config = ydoc.getMap<string>("config");
+    config.observe(() => {
+      const lang = config.get("language");
+      if (lang) {
+        setLanguage(lang as Language);
+      }
+    });
+    const providerLocal = new HocuspocusProvider(
+      {
+        url: `${wsUrl}/ws/${sessionName}`, name: sessionName, document: ydoc,
+        onDisconnect(data) {
+          console.log("Disconnected, trying to connect...");
+          setConnected(false);
+          providerLocal.connect();
+        },
+        onAwarenessUpdate(states) {
+          setUsers(states.states.map(v => v?.username ?? null).filter(u => u));
+        },
+        onConnect() {
+          console.log("Connected");
+          providerLocal.setAwarenessField("username", user.username);
+          if (config.has("language")) {
+            setLanguage(config.get("language") as Language);
+          }
+          setConnected(true);
+        },
+        onStateless({ payload }) {
+          try {
+            const event = ProviderEventSchema.parse(JSON.parse(payload));
+            console.log(event);
+            if (event.source === user.id) {
+              return;
+            }
+            switch (event._tag) {
+              // TODO   
+              case "output":
+                setOtherUserTriggered(false);
+                const res = event.data;
+                trigger({ code: "", language: language, set: res });
+                break;
+              case "runError":
+                setOtherUserTriggered(false);
+                break;
+              case "run":
+                setOtherUserTriggered(true);
+                break;
+              case "acceptLang":
+                config.set("language", event.lang)
+                break;
+              case "changeLang":
+
+                break;
+            }
+          } catch (error) {
+            console.log(error);
+          }
+        },
+      })
+
+    const binding = new MonacoBinding(ydoc.getText("monaco"), editor.getModel()!, new Set([editor]), providerLocal.awareness);
+
+    provider.current = providerLocal;
+    configRef.current = config;
+
+    return () => {
+      providerLocal.destroy();
+    }
+  }, [editor]);
 
   const languageSelector = (
     <Select flex={3} size="xs" label="Select Language" data={LANGUAGES} value={language} onChange={v => {
-      if (v && yMap.current) {
-        yMap.current.set("language", v);
+      if (provider.current?.isConnected && v && users.length > 1) {
+        const request: ProviderEvent = {
+          _tag: "changeLang",
+          lang: v as Language,
+          source: user.id
+        };
+        provider.current.sendStateless(JSON.stringify(request));
       } else if (v) {
+        configRef.current?.set("language", v);
         setLanguage(v as Language);
       }
     }} />
@@ -79,41 +197,12 @@ export default function CodeEditor({ sessionName, user, wsUrl, onRun, question }
           </Tooltip>
         )}
         <Button onClick={() =>
-          trigger({ language: language, code: editor.current?.getValue() || "", emit: true })} loading={isMutating || otherUserTriggered}>
+          trigger({ language: language, code: editor?.getValue() || "" })} loading={isMutating || otherUserTriggered}>
           <IconPlayerPlayFilled />
         </Button>
       </Group>
-    </Group>
+    </Group >
   )
-
-  useEffect(() => {
-    console.log("Connection");
-    const p = new HocuspocusProvider({
-      url: `${wsUrl}/ws/${sessionName}`, name: sessionName, document: ydoc, onClose: () => {
-        console.log("close");
-        binding.current?.destroy();
-        editor.current?.dispose();
-      },
-      onDisconnect(data) {
-        console.log("disconnected");
-        p.connect();
-      },
-      onAwarenessUpdate(states) {
-        setUsers(states.states.map(v => v?.username ?? null).filter(u => u));
-        console.log(users);
-      },
-    });
-    p.setAwarenessField("username", user!.username)
-    setProvider(p);
-    return () => {
-      console.log(p);
-      p.destroy();
-    }
-  }, [ydoc])
-
-  if (!provider) {
-    return <Loading h="100%" />
-  }
 
   return (
     <>
@@ -147,29 +236,8 @@ export default function CodeEditor({ sessionName, user, wsUrl, onRun, question }
             {header}
             <Box flex="1 1 auto" h={0}>
               <Editor width="100%" language={language} theme="vs-dark" onMount={(e, m) => {
-                editor.current = e;
-                const model = e.getModel();
-                if (!model) {
-                  return;
-                }
-                binding.current = new MonacoBinding(ydoc.getText("monaco"), model, new Set([e]), provider.awareness);
-
-                const map = ydoc.getMap<string>("language-selector");
-                map.set("language", language);
-                map.observe(e => {
-                  const temp = map.get("language");
-                  if (temp) setLanguage(temp as Language);
-                  if (map.get("run") === "true") {
-                    setOtherUserTriggered(true);
-                  } else {
-                    setOtherUserTriggered(false);
-                  }
-                  if (map.has("output") && editor.current) {
-                    trigger({ code: editor.current.getValue(), language: language, emit: false });
-                  }
-                })
-
-                yMap.current = map;
+                console.log("editor mounted");
+                setEditor(e);
               }}
                 beforeMount={(monaco) => {
                   monaco.languages.typescript.typescriptDefaults.setDiagnosticsOptions({

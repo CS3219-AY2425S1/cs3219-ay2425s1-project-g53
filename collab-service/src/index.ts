@@ -41,6 +41,10 @@ const server = Server.configure({
       	sessionManager.cancelTimeout(data.documentName);
       }
   },
+  async onStateless({payload, document, connection}) {
+      document.broadcastStateless(payload);
+  },
+
 })
 
 app.ws("/ws/:session", (websocket, request, next ) => {

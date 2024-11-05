@@ -15,3 +15,21 @@ export const sessionSchema = z.object({
 });
 
 export type Session = z.infer<typeof sessionSchema>;
+
+export const ExecutionResultSchema = z.object({
+  run: z.object({
+    stdout: z.string(),
+    stderr: z.string(),
+    code: z.nullable(z.number()),
+    output: z.string(),
+  }),
+  compile: z.object({
+    stdout: z.string(),
+    stderr: z.string(),
+    code: z.nullable(z.number()),
+    output: z.string(),
+  }).optional(),
+
+});
+
+export type ExecutionResult = z.infer<typeof ExecutionResultSchema>;

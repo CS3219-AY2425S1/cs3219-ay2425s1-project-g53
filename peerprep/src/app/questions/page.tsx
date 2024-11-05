@@ -1,4 +1,3 @@
-import React, { useState } from 'react';
 import { Stack, Button } from '@mantine/core';
 import QuestionTable from '@/components/question-table';
 import MatchTimerModal from '@/components/match-timer-modal';

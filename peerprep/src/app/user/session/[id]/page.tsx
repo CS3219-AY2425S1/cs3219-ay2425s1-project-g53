@@ -3,7 +3,7 @@ import { runCode } from '@/actions/execution';
 import { getQuestion } from '@/actions/questions';
 import { getCollabWsUrl } from '@/actions/url';
 import { currentUser } from '@/actions/user';
-import CodeEditor from '@/components/editor';
+import { CodeEditor } from '@/components/editor';
 import Loading from '@/components/loading';
 import { TwoHorizontalPanels } from '@/components/panels';
 import QuestionDisplay from '@/components/question';
@@ -36,7 +36,7 @@ export default async function Page({ params }: { params: { id: string } }) {
     <Container fluid px={15} py={0} h="100%">
       <CodeEditor sessionName={sessionName} user={user} wsUrl={url} question={question} onRun={async (v, l) => {
         "use server"
-        const res = await runCode(l,v);
+        const res = await runCode(l, v);
         if (res.compile) {
           console.log("Compilation:");
           console.log(res.compile.output);
