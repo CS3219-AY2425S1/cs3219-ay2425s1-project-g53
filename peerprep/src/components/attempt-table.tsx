@@ -54,7 +54,7 @@ export default function AttemptTable() {
     <Table.Tr>
       {/* <Table.Td>{q.id}</Table.Td> */}
       {/* <Table.Td>{q.users[0]}</Table.Td> */}
-      <Table.Td>{q.users[1]}</Table.Td>
+      <Table.Td>{q.users[0] === user.username ? q.users[1] : q.users[0]}</Table.Td>
       <Table.Td>{q.problem}</Table.Td>
       <Table.Td>{q.createdAt}</Table.Td>
       <Table.Td>
