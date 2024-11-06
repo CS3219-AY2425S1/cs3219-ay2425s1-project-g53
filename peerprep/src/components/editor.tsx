@@ -260,6 +260,31 @@ export function CodeEditor({ sessionName, user, wsUrl, onRun, question }: { sess
     </Group >
   )
 
+  const title: ["Compile Error" | "Runtime Error" | "Success" | "", "red" | "green" | undefined] = (() => {
+    if (!data) {
+      return ["", undefined]
+    }
+    if (data.compile?.code != null && data.compile.code !== 0) {
+      return ["Compile Error", "red"]
+    }
+    if (data.run.code !== 0) {
+      return ["Runtime Error", "red"]
+    }
+    return ["Success", "green"]
+  })();
+
+  const contents = (() => {
+    switch (title[0]) {
+      case "":
+        return error;
+      case "Compile Error":
+        return data?.compile?.output;
+      case "Runtime Error":
+      case "Success":
+        return data?.run.output;
+    }
+  })()
+
   return (
     <>
       <style>
@@ -306,12 +331,10 @@ export function CodeEditor({ sessionName, user, wsUrl, onRun, question }: { sess
         </Panel>
         <PanelResizeHandle style={{ height: "2px", backgroundColor: theme?.colors.gray[7] ?? "gray" }} />
         <Panel defaultSize={20} style={{ display: "flex", flexDirection: "column" }}>
-          <ScrollArea h={0} m={10} flex="1 1 auto" bg={theme?.colors.gray[9]} c={error || data?.run.code == null || data.run.code !== 0 || (data?.compile?.code != null && data.compile.code !== 0) ? "red" : "green"}>
+          <ScrollArea h={0} m={10} flex="1 1 auto" bg={theme?.colors.gray[9]} c={title[1]}>
             <Stack h="100%" p={5}>
-              {(data?.compile?.code != null && data.compile.code !== 0) && <Title order={3}>Compilation Error</Title>}
-              {(data?.run.code != null && data.run.code !== 0) && <Title order={3}>Runtime Error</Title>}
-              {(data?.run.code != null && data.run.code === 0) && <Title order={3}>Success</Title>}
-              <ReactMarkdown>{`\`\`\`\n${error ?? (data?.compile?.code != null && data.compile.code !== 0 ? data.compile.output : data?.run.output ?? "")}\n\`\`\``}</ReactMarkdown>
+              <Title>{title[0]}</Title>
+              <ReactMarkdown>{`\`\`\`\n${contents}\n\`\`\``}</ReactMarkdown>
             </Stack>
           </ScrollArea>
         </Panel>
