@@ -136,6 +136,7 @@ export function CodeEditor({ sessionName, user, wsUrl, onRun, question }: { sess
         onConnect() {
           console.log("Connected");
           providerLocal.setAwarenessField("username", user.username);
+          providerLocal.awareness?.getStates();
           if (config.has("language")) {
             setLanguage(config.get("language") as Language);
           }
@@ -274,9 +275,12 @@ export function CodeEditor({ sessionName, user, wsUrl, onRun, question }: { sess
   })();
 
   const contents = (() => {
+    if (error) {
+      return error;
+    }
     switch (title[0]) {
       case "":
-        return error;
+        return "";
       case "Compile Error":
         return data?.compile?.output;
       case "Runtime Error":
