@@ -7,7 +7,7 @@ import * as Y from 'yjs'
 import { useEffect, useRef, useState } from "react";
 import { MonacoBinding } from "y-monaco";
 import { HocuspocusProvider } from "@hocuspocus/provider";
-import { Avatar, Button, Select, Stack, Tooltip, Box, ScrollArea, Title, useMantineTheme, Dialog, Text, Code } from "@mantine/core";
+import { Avatar, Button, Select, Stack, Tooltip, Box, ScrollArea, Title, useMantineTheme, Dialog, Text, Code, Badge } from "@mantine/core";
 import { Group } from "@mantine/core";
 import { UserWithToken } from "@/actions/user";
 import { IconPlayerPlayFilled } from "@tabler/icons-react";
@@ -60,6 +60,7 @@ export function CodeEditor({ sessionName, user, wsUrl, onRun, question }: { sess
   const [language, setLanguage] = useState<Language>("typescript");
   const [otherUserTriggered, setOtherUserTriggered] = useState(false);
   const [editor, setEditor] = useState<monaco.editor.IStandaloneCodeEditor | null>(null);
+  const [selectorLabel, setSelectorLabel] = useState<"Select Language" | "Waiting for accept..." | "No reply">("Select Language");
 
   const [languageChangeRequest, setLanguageChangeRequest] = useState<z.infer<typeof RequestLanguageChangeEventSchema> | null>(null);
 
@@ -164,6 +165,7 @@ export function CodeEditor({ sessionName, user, wsUrl, onRun, question }: { sess
                 break;
               case "acceptLang":
                 setLanguageChangeRequest(null);
+                setSelectorLabel("Select Language");
                 config.set("language", event.lang)
                 notifications.show({ message: `Language changed to ${event.lang}` })
                 break;
@@ -188,7 +190,7 @@ export function CodeEditor({ sessionName, user, wsUrl, onRun, question }: { sess
   }, [editor]);
 
   const languageSelector = (
-    <Select flex={3} size="xs" label="Select Language" data={LANGUAGES} value={language} onChange={v => {
+    <Select flex={3} disabled={selectorLabel !== "Select Language"} size="xs" label={selectorLabel} data={LANGUAGES} value={language} onChange={v => {
       if (provider.current?.isConnected && v && users.length > 1) {
         provider.current.sendStateless(JSON.stringify({
           _tag: "changeLang",
@@ -197,6 +199,16 @@ export function CodeEditor({ sessionName, user, wsUrl, onRun, question }: { sess
           username: user.username
         } satisfies ProviderEvent));
         notifications.show({ message: "Sent a language change request to all users" });
+        setSelectorLabel("Waiting for accept...");
+        setTimeout(() => {
+          setSelectorLabel(prev => {
+            if (prev === "Select Language") {
+              return prev;
+            }
+            setTimeout(() => { setSelectorLabel("Select Language") }, 2000);
+            return "No reply";
+          })
+        }, 10000);
       } else if (v) {
         configRef.current?.set("language", v);
         setLanguage(v as Language);
@@ -220,6 +232,7 @@ export function CodeEditor({ sessionName, user, wsUrl, onRun, question }: { sess
           }
           setLanguage(languageChangeRequest.lang);
           setLanguageChangeRequest(null);
+          setSelectorLabel("Select Language");
         }} >
           Agree
         </Button>
@@ -231,12 +244,15 @@ export function CodeEditor({ sessionName, user, wsUrl, onRun, question }: { sess
     <Group w="100%" align="end">
       {languageSelector}
       <Group flex={5} justify="flex-end">
+        <Badge color={connected ? "green" : "gray"} >
+          {connected ? "Online" : "Offline"}
+        </Badge>
         {users.map(u =>
           <Tooltip key={u} label={u}>
             <Avatar name={u} color={u === user?.username ? "green" : "red"} />
           </Tooltip>
         )}
-        <Button onClick={() =>
+        <Button variant="transparent" size="compact-md" onClick={() =>
           trigger({ language: language, code: editor?.getValue() || "" })} loading={isMutating || otherUserTriggered}>
           <IconPlayerPlayFilled />
         </Button>
