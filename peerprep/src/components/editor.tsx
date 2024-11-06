@@ -7,7 +7,7 @@ import * as Y from 'yjs'
 import { useEffect, useRef, useState } from "react";
 import { MonacoBinding } from "y-monaco";
 import { HocuspocusProvider } from "@hocuspocus/provider";
-import { Avatar, Button, Select, Stack, Tooltip, Box, ScrollArea, Title, useMantineTheme } from "@mantine/core";
+import { Avatar, Button, Select, Stack, Tooltip, Box, ScrollArea, Title, useMantineTheme, Dialog, Text, Code } from "@mantine/core";
 import { Group } from "@mantine/core";
 import { UserWithToken } from "@/actions/user";
 import { IconPlayerPlayFilled } from "@tabler/icons-react";
@@ -19,6 +19,7 @@ import { addAttempt } from "@/actions/history";
 import { Question } from "@/actions/questions";
 import { z } from 'zod';
 import { ExecutionResultSchema } from "@/lib/schemas";
+import { useDisclosure } from "@mantine/hooks";
 
 const LANGUAGES = ["javascript", "typescript", "csharp", "java", "rust", "python"] as const;
 export type Language = typeof LANGUAGES[number];
@@ -44,6 +45,7 @@ const AcceptLanguageChangeEventSchema = z.object({
 const RequestLanguageChangeEventSchema = z.object({
   _tag: z.literal("changeLang"),
   lang: z.enum(LANGUAGES),
+  username: z.string(),
 });
 
 const ProviderEventSchema = z.discriminatedUnion("_tag", [OutputEventSchema, RunEventSchema, AcceptLanguageChangeEventSchema, RunErrorSchema, RequestLanguageChangeEventSchema]).and(z.object({ source: z.string() }));
@@ -57,12 +59,18 @@ export function CodeEditor({ sessionName, user, wsUrl, onRun, question }: { sess
   const [otherUserTriggered, setOtherUserTriggered] = useState(false);
   const [editor, setEditor] = useState<monaco.editor.IStandaloneCodeEditor | null>(null);
 
+  const [languageChangeRequest, setLanguageChangeRequest] = useState<z.infer<typeof RequestLanguageChangeEventSchema> | null>(null);
+
   const configRef = useRef<Y.Map<string> | null>(null);
   const provider = useRef<HocuspocusProvider | null>(null);
 
-  const { trigger, isMutating, data, reset, error } = useSWRMutation("runCode", async (k, { arg }: { arg: { code: string, language: Language, set?: ExecutionResult } }) => {
+  const { trigger, isMutating, data, reset, error } = useSWRMutation("runCode", async (k, { arg }: { arg: { code: string, language: Language, set?: ExecutionResult | any } }) => {
     if (arg.set) {
-      return arg.set;
+      const res = ExecutionResultSchema.safeParse(arg.set);
+      if (!res.data) {
+        throw arg.set;
+      }
+      return res.data;
     }
     if (provider.current && provider.current.isConnected) {
       const payload: ProviderEvent = {
@@ -93,6 +101,7 @@ export function CodeEditor({ sessionName, user, wsUrl, onRun, question }: { sess
         source: user.id
       };
       provider.current?.sendStateless(JSON.stringify(payload))
+      throw error;
     }
   })
 
@@ -136,7 +145,6 @@ export function CodeEditor({ sessionName, user, wsUrl, onRun, question }: { sess
               return;
             }
             switch (event._tag) {
-              // TODO   
               case "output":
                 setOtherUserTriggered(false);
                 const res = event.data;
@@ -144,15 +152,18 @@ export function CodeEditor({ sessionName, user, wsUrl, onRun, question }: { sess
                 break;
               case "runError":
                 setOtherUserTriggered(false);
+                const error = event.error;
+                trigger({ code: "", language: language, set: error });
                 break;
               case "run":
                 setOtherUserTriggered(true);
                 break;
               case "acceptLang":
+                setLanguageChangeRequest(null);
                 config.set("language", event.lang)
                 break;
               case "changeLang":
-
+                setLanguageChangeRequest(event);
                 break;
             }
           } catch (error) {
@@ -174,17 +185,40 @@ export function CodeEditor({ sessionName, user, wsUrl, onRun, question }: { sess
   const languageSelector = (
     <Select flex={3} size="xs" label="Select Language" data={LANGUAGES} value={language} onChange={v => {
       if (provider.current?.isConnected && v && users.length > 1) {
-        const request: ProviderEvent = {
+        provider.current.sendStateless(JSON.stringify({
           _tag: "changeLang",
           lang: v as Language,
-          source: user.id
-        };
-        provider.current.sendStateless(JSON.stringify(request));
+          source: user.id,
+          username: user.username
+        } satisfies ProviderEvent));
       } else if (v) {
         configRef.current?.set("language", v);
         setLanguage(v as Language);
       }
     }} />
+  )
+
+  const languageChangeDialog = (
+    <Dialog opened={languageChangeRequest != null} withCloseButton onClose={() => setLanguageChangeRequest(null)}>
+      <Stack>
+        <Text size="sm">
+          {`${languageChangeRequest?.username} wants to change language to `}
+          <Code >{languageChangeRequest?.lang}</Code>
+        </Text>
+        <Button onClick={() => {
+          if (!languageChangeRequest) {
+            return;
+          }
+          if (provider.current && provider.current.isConnected) {
+            provider.current.sendStateless(JSON.stringify({ _tag: "acceptLang", source: user.id, lang: languageChangeRequest.lang } satisfies ProviderEvent));
+          }
+          setLanguage(languageChangeRequest.lang);
+          setLanguageChangeRequest(null);
+        }} >
+          Agree
+        </Button>
+      </Stack>
+    </Dialog>
   )
 
   const header = (
@@ -231,7 +265,7 @@ export function CodeEditor({ sessionName, user, wsUrl, onRun, question }: { sess
           `}
       </style>
       <PanelGroup direction="vertical" autoSaveId={`${user.id}-${sessionName}-editor`}>
-        <Panel>
+        <Panel defaultSize={80}>
           <Stack h="100%" p={10} >
             {header}
             <Box flex="1 1 auto" h={0}>
@@ -249,7 +283,7 @@ export function CodeEditor({ sessionName, user, wsUrl, onRun, question }: { sess
           </Stack>
         </Panel>
         <PanelResizeHandle style={{ height: "2px", backgroundColor: theme?.colors.gray[7] ?? "gray" }} />
-        <Panel style={{ display: "flex", flexDirection: "column" }}>
+        <Panel defaultSize={20} style={{ display: "flex", flexDirection: "column" }}>
           <ScrollArea h={0} m={10} flex="1 1 auto" bg={theme?.colors.gray[9]} c={error || data?.run.code == null || data.run.code !== 0 || (data?.compile?.code != null && data.compile.code !== 0) ? "red" : "green"}>
             <Stack h="100%" p={5}>
               {(data?.compile?.code != null && data.compile.code !== 0) && <Title order={3}>Compilation Error</Title>}
@@ -260,6 +294,7 @@ export function CodeEditor({ sessionName, user, wsUrl, onRun, question }: { sess
           </ScrollArea>
         </Panel>
       </PanelGroup>
+      {languageChangeDialog}
     </>)
 }
 
