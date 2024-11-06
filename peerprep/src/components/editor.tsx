@@ -20,6 +20,7 @@ import { Question } from "@/actions/questions";
 import { z } from 'zod';
 import { ExecutionResultSchema } from "@/lib/schemas";
 import { useDisclosure } from "@mantine/hooks";
+import { notifications } from "@mantine/notifications";
 
 const LANGUAGES = ["javascript", "typescript", "csharp", "java", "rust", "python"] as const;
 export type Language = typeof LANGUAGES[number];
@@ -30,12 +31,13 @@ const OutputEventSchema = z.object({
 });
 
 const RunEventSchema = z.object({
-  _tag: z.literal("run")
+  _tag: z.literal("run"),
+  username: z.string()
 });
 
 const RunErrorSchema = z.object({
   _tag: z.literal("runError"),
-  error: z.any()
+  error: z.any(),
 })
 
 const AcceptLanguageChangeEventSchema = z.object({
@@ -76,6 +78,7 @@ export function CodeEditor({ sessionName, user, wsUrl, onRun, question }: { sess
       const payload: ProviderEvent = {
         _tag: "run",
         source: user.id,
+        username: user.username,
       }
       provider.current.sendStateless(JSON.stringify(payload));
     }
@@ -98,7 +101,7 @@ export function CodeEditor({ sessionName, user, wsUrl, onRun, question }: { sess
       const payload: ProviderEvent = {
         _tag: "runError",
         error: error,
-        source: user.id
+        source: user.id,
       };
       provider.current?.sendStateless(JSON.stringify(payload))
       throw error;
@@ -157,10 +160,12 @@ export function CodeEditor({ sessionName, user, wsUrl, onRun, question }: { sess
                 break;
               case "run":
                 setOtherUserTriggered(true);
+                notifications.show({ message: `${event.username} has run the code.` });
                 break;
               case "acceptLang":
                 setLanguageChangeRequest(null);
                 config.set("language", event.lang)
+                notifications.show({ message: `Language changed to ${event.lang}` })
                 break;
               case "changeLang":
                 setLanguageChangeRequest(event);
@@ -191,6 +196,7 @@ export function CodeEditor({ sessionName, user, wsUrl, onRun, question }: { sess
           source: user.id,
           username: user.username
         } satisfies ProviderEvent));
+        notifications.show({ message: "Sent a language change request to all users" });
       } else if (v) {
         configRef.current?.set("language", v);
         setLanguage(v as Language);
