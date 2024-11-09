@@ -45,6 +45,8 @@ services:
     build:
       context: ./matching-service
       dockerfile: Dockerfile
+    environment:
+      - DB_URL=postgresql://admin:admin@postgres:5432/pp-crud
     ports:
       - "8086:8080"
 
@@ -77,8 +79,8 @@ services:
       POSTGRES_DB: pp-crud
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    # ports:
-      # - "5433:5432" # No need for this
+    ports:
+    - "5433:5432" # No need for this
 
 
 volumes:

@@ -2,9 +2,11 @@
   myPython = pkgs.python3.withPackages (ps:
     with ps; [
       fastapi
+      uvicorn
       pydantic
       psycopg2
       json5
+      websockets
     ]);
 in
   pkgs.mkShell {
