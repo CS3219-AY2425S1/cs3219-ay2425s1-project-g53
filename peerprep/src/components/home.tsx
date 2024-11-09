@@ -18,6 +18,9 @@ export default function Home() {
         </Link>
         {user ?
           <Stack>
+            <Link href="/user/match">
+              <Button w="100%">Match Now</Button>
+            </Link>
             <Link href="/user/history">
               <Button w="100%">Attempt History</Button>
             </Link>
@@ -25,7 +28,7 @@ export default function Home() {
               Log Out
             </Button>
           </Stack>
-            :
+          :
           <>
             <Link href="/auth/login">
               <Button w="100%">Log In</Button>
