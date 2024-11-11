@@ -10,7 +10,7 @@ import { HocuspocusProvider } from "@hocuspocus/provider";
 import { Avatar, Button, Select, Stack, Tooltip, Box, ScrollArea, Title, useMantineTheme, Dialog, Text, Code, Badge } from "@mantine/core";
 import { Group } from "@mantine/core";
 import { UserWithToken } from "@/actions/user";
-import { IconPlayerPlayFilled } from "@tabler/icons-react";
+import { IconAlertCircle, IconPlayerPlayFilled } from "@tabler/icons-react";
 import useSWRMutation from "swr/mutation";
 import ReactMarkdown from 'react-markdown';
 import { runCode, ExecutionResult } from "../actions/execution";
@@ -61,6 +61,7 @@ export function CodeEditor({ sessionName, user, wsUrl, onRun, question }: { sess
   const [otherUserTriggered, setOtherUserTriggered] = useState(false);
   const [editor, setEditor] = useState<monaco.editor.IStandaloneCodeEditor | null>(null);
   const [selectorLabel, setSelectorLabel] = useState<"Select Language" | "Waiting for accept..." | "No reply">("Select Language");
+  const [warning, setWarning] = useState<string>("");
 
   const [languageChangeRequest, setLanguageChangeRequest] = useState<z.infer<typeof RequestLanguageChangeEventSchema> | null>(null);
 
@@ -132,10 +133,19 @@ export function CodeEditor({ sessionName, user, wsUrl, onRun, question }: { sess
         },
         onAwarenessUpdate(states) {
           setUsers(states.states.map(v => v?.username ?? null).filter(u => u));
+          const position = editor.getPosition();
+          if (!position) return;
+          const lineConflict = states.states.filter(s => s.username != user.username).find(s => s.line === position.lineNumber);
+          if (lineConflict) {
+            setWarning(`Line Conflict`);
+          } else {
+            setWarning("");
+          }
         },
         onConnect() {
           console.log("Connected");
           providerLocal.setAwarenessField("username", user.username);
+          providerLocal.setAwarenessField("line", editor.getPosition()?.lineNumber);
           providerLocal.awareness?.getStates();
           if (config.has("language")) {
             setLanguage(config.get("language") as Language);
@@ -180,6 +190,10 @@ export function CodeEditor({ sessionName, user, wsUrl, onRun, question }: { sess
         },
       })
 
+    editor.onDidChangeCursorPosition(c => {
+      providerLocal.setAwarenessField("line", c.position.lineNumber);
+    })
+
     const binding = new MonacoBinding(ydoc.getText("monaco"), editor.getModel()!, new Set([editor]), providerLocal.awareness);
 
     provider.current = providerLocal;
@@ -191,7 +205,7 @@ export function CodeEditor({ sessionName, user, wsUrl, onRun, question }: { sess
   }, [editor]);
 
   const languageSelector = (
-    <Select flex={3} disabled={selectorLabel !== "Select Language"} size="xs" label={selectorLabel} data={LANGUAGES} value={language} onChange={v => {
+    <Select flex="3 0 auto" disabled={selectorLabel !== "Select Language"} size="xs" label={selectorLabel} data={LANGUAGES} value={language} onChange={v => {
       if (provider.current?.isConnected && v && users.length > 1) {
         provider.current.sendStateless(JSON.stringify({
           _tag: "changeLang",
@@ -244,7 +258,8 @@ export function CodeEditor({ sessionName, user, wsUrl, onRun, question }: { sess
   const header = (
     <Group w="100%" align="end">
       {languageSelector}
-      <Group flex={5} justify="flex-end">
+      <Group flex="9 0 auto" justify="flex-end" wrap="nowrap">
+        {warning && <Group c="orange" wrap="nowrap" gap={4} flex="0 1 auto"><IconAlertCircle /><Text size="xs" >{warning}</Text></Group>}
         <Badge color={connected ? "green" : "gray"} >
           {connected ? "Online" : "Offline"}
         </Badge>
