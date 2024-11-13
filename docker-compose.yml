@@ -1,0 +1,106 @@
+services:
+  fastapi:
+    build:
+      context: ./questions-service
+      dockerfile: Dockerfile
+    # ports:
+      # - "8085:8080" # No need for this in production if docker compose is used, {SERVICE_NAME} will point to the correct ip
+    depends_on:
+      postgres:
+        condition: service_started
+    environment:
+      # Set DB_URL to connect FastAPI to the PostgreSQL container
+      - DB_URL=postgresql://admin:admin@postgres:5432/pp-crud
+    working_dir: /questions-service  # Set the working directory for FastAPI
+
+  user-service:
+    build:
+      context: ./user-service
+      dockerfile: Dockerfile
+    # ports:
+      # - "3001:3001" # For debugging, remember to delete in production
+    
+  nextjs:
+    build:
+      context: ./peerprep
+      dockerfile: Dockerfile
+    ports:
+      - "3005:3000"
+    environment:
+      - QUESTION_API_URL=http://fastapi:8080
+      - USER_API_URL=http://user-service:3001
+      - MATCH_WS_URL=wss://peerprep.ginloy.com/api/match
+      - COLLAB_WS_URL=wss://peerprep.ginloy.com/api/collab
+      - COLLAB_API_URL=http://collab-service:3000
+      - HISTORY_API_URL=http://history-service:8088
+      - EXECUTION_API_URL=http://code-execution-service:4000
+    networks:
+      - caddy
+      - default
+    labels:
+      caddy: "peerprep.ginloy.com"
+      caddy.route.1_import: peerprep_auth
+      caddy.route.2_handle_path: '/api/match*'
+      caddy.route.2_handle_path.reverse_proxy: matching-service:8080
+      caddy.route.2_handle_path.reverse_proxy.stream_close_delay: 6h
+      caddy.route.3_handle_path: '/api/collab*'
+      caddy.route.3_handle_path.reverse_proxy: collab-service:3000
+      caddy.route.3_handle_path.reverse_proxy.stream_close_delay: 6h
+      caddy.route.4_reverse_proxy: "{{upstreams http 3000}}"
+
+  matching-service:
+    build:
+      context: ./matching-service
+      dockerfile: Dockerfile
+    ports:
+      - "8086:8080"
+    environment:
+      - "DB_URL=postgresql://admin:admin@postgres:5432/pp-crud"
+    networks:
+      - default
+      - caddy
+
+  history-service:
+    build:
+      context: ./history-service
+      dockerfile: Dockerfile
+    ports:
+      - "8090:8088"
+    networks:
+      - default
+      - caddy
+
+  collab-service:
+    build:
+      context: ./collab-service
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    networks:
+      - default
+      - caddy
+  
+  code-execution-service:
+    build:
+      context: ./code-execution-service
+      dockerfile: Dockerfile
+    networks:
+      - default
+
+  postgres:
+    image: postgres:14
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: pp-crud
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    # ports:
+      # - "5433:5432" # No need for this
+
+volumes:
+  postgres_data:
+
+networks:
+  caddy:
+    external: true
